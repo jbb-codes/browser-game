@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>06 — InputManager.ts | Walkthrough</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #0f0f1a;
+        color: #e2e8f0;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        padding: 2rem;
+        max-width: 860px;
+        margin: 0 auto;
+      }
+      header {
+        margin-bottom: 2rem;
+      }
+      .file-tag {
+        display: inline-block;
+        background: #7c5cbf;
+        color: white;
+        font-size: 0.75rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        font-family: monospace;
+        margin-bottom: 0.5rem;
+      }
+      h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.4rem;
+      }
+      .subtitle {
+        color: #94a3b8;
+      }
+      .card {
+        background: #1a1a2e;
+        border: 1px solid #2d2d4a;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+      h2 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #a78bfa;
+        margin-bottom: 1rem;
+      }
+      .bullet {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 0.65rem;
+        align-items: flex-start;
+      }
+      .dot {
+        width: 7px;
+        height: 7px;
+        background: #7c5cbf;
+        border-radius: 50%;
+        margin-top: 0.45rem;
+        flex-shrink: 0;
+      }
+      .bullet p {
+        color: #cbd5e1;
+        font-size: 0.93rem;
+        line-height: 1.6;
+      }
+      code {
+        font-family: monospace;
+        background: #2d2d4a;
+        padding: 0.1rem 0.35rem;
+        border-radius: 3px;
+        color: #a78bfa;
+        font-size: 0.85em;
+      }
+
+      /* Keyboard */
+      .keyboard {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-bottom: 1rem;
+      }
+      .kb-row {
+        display: flex;
+        gap: 5px;
+      }
+      .kb-key {
+        background: #2d2d4a;
+        border: 1px solid #3d3d5a;
+        border-bottom: 3px solid #1a1a2e;
+        border-radius: 5px;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: monospace;
+        font-size: 0.8rem;
+        color: #64748b;
+        transition: all 0.08s;
+        flex-shrink: 0;
+      }
+      .kb-key.wide {
+        width: 60px;
+      }
+      .kb-key.tracked {
+        border-color: #4a6a4a;
+        color: #64a064;
+      }
+      .kb-key.active {
+        background: #2a1f45;
+        border-color: #7c5cbf;
+        border-bottom-color: #4a3a8a;
+        color: #a78bfa;
+        transform: translateY(2px);
+      }
+
+      /* Dictionary display */
+      .dict-display {
+        background: #0a0a15;
+        border: 1px solid #2d2d4a;
+        border-radius: 8px;
+        padding: 1rem;
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 0.85rem;
+        min-height: 80px;
+      }
+      .dict-key {
+        color: #86efac;
+      }
+      .dict-colon {
+        color: #94a3b8;
+      }
+      .dict-true {
+        color: #a78bfa;
+        font-weight: bold;
+      }
+      .dict-false {
+        color: #4a5568;
+      }
+      .dict-brace {
+        color: #94a3b8;
+      }
+
+      /* Flow steps */
+      .flow-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .flow-step {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: #0f0f1a;
+        border: 1px solid #2d2d4a;
+        border-radius: 8px;
+        padding: 0.7rem 1rem;
+      }
+      .flow-icon {
+        font-size: 1.2rem;
+        min-width: 2rem;
+        text-align: center;
+      }
+      .flow-name {
+        font-family: monospace;
+        font-size: 0.85rem;
+        color: #a78bfa;
+        margin-bottom: 0.1rem;
+      }
+      .flow-desc {
+        font-size: 0.82rem;
+        color: #64748b;
+      }
+
+      /* Code block */
+      .code-wrap {
+        background: #0a0a15;
+        border: 1px solid #2d2d4a;
+        border-radius: 8px;
+        padding: 1.2rem;
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 0.87rem;
+        line-height: 1.9;
+        overflow-x: auto;
+      }
+      .cl {
+        display: flex;
+        gap: 1rem;
+      }
+      .ln {
+        color: #3d3d5a;
+        min-width: 1.5rem;
+        text-align: right;
+        user-select: none;
+      }
+      .lc {
+        flex: 1;
+      }
+      .cl.hl {
+        background: #1a1535;
+        border-radius: 3px;
+        margin: 0 -0.5rem;
+        padding: 0 0.5rem;
+      }
+      .kw {
+        color: #c084fc;
+      }
+      .ty {
+        color: #f9a8d4;
+      }
+      .st {
+        color: #86efac;
+      }
+      .fn {
+        color: #60a5fa;
+      }
+      .vn {
+        color: #fde68a;
+      }
+      .tag {
+        display: inline-block;
+        background: #7c5cbf;
+        color: white;
+        font-size: 0.68rem;
+        padding: 0.08rem 0.4rem;
+        border-radius: 3px;
+        margin-left: 0.75rem;
+        font-family: "Segoe UI", sans-serif;
+        vertical-align: middle;
+      }
+
+      .nav {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+      }
+      .nav a {
+        background: #1a1a2e;
+        border: 1px solid #2d2d4a;
+        color: #a78bfa;
+        text-decoration: none;
+        padding: 0.55rem 1.1rem;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        transition: border-color 0.2s;
+      }
+      .nav a:hover {
+        border-color: #7c5cbf;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="file-tag">src/input/InputManager.ts</div>
+      <h1>06 — Listening to the Player</h1>
+      <p class="subtitle">
+        Tracks which keys are held down at any moment using a simple dictionary.
+      </p>
+    </header>
+
+    <div class="card">
+      <h2>What this file does</h2>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          Maintains a <code>keys</code> dictionary — an object where each key
+          name maps to <code>true</code> (currently held) or
+          <code>false</code> (released).
+        </p>
+      </div>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          Listens for <code>keydown</code> events — when a key is pressed, it
+          sets that entry to <code>true</code>.
+        </p>
+      </div>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          Listens for <code>keyup</code> events — when a key is released, it
+          sets that entry to <code>false</code>.
+        </p>
+      </div>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          <code>isDown(key)</code> is called by
+          <code>Player.update()</code> every frame to check whether a specific
+          key is currently held.
+        </p>
+      </div>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          <code>dispose()</code> removes the event listeners when the game shuts
+          down — prevents memory leaks.
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Interactive — Press Keys on Your Keyboard</h2>
+      <p style="color: #64748b; font-size: 0.82rem; margin-bottom: 1rem">
+        Press any key. Keys with a
+        <span style="color: #64a064">green border</span> are the ones
+        InputManager tracks in the game. Watch the dictionary update live.
+      </p>
+
+      <div class="keyboard">
+        <div class="kb-row">
+          <div class="kb-key" data-key="q">Q</div>
+          <div class="kb-key" data-key="w">W</div>
+          <div class="kb-key" data-key="e">E</div>
+          <div class="kb-key" data-key="r">R</div>
+          <div class="kb-key" data-key="t">T</div>
+        </div>
+        <div class="kb-row">
+          <div class="kb-key" data-key="a">A</div>
+          <div class="kb-key" data-key="s">S</div>
+          <div class="kb-key" data-key="d">D</div>
+          <div class="kb-key" data-key="f">F</div>
+          <div class="kb-key" data-key="g">G</div>
+        </div>
+        <div class="kb-row">
+          <div class="kb-key wide" data-key="shift">Shift</div>
+          <div class="kb-key" data-key="z">Z</div>
+          <div class="kb-key" data-key="x">X</div>
+          <div class="kb-key" data-key="c">C</div>
+        </div>
+      </div>
+
+      <p style="font-size: 0.78rem; color: #4a5568; margin-bottom: 0.75rem">
+        The <code>keys</code> dictionary right now:
+      </p>
+      <div class="dict-display" id="dictDisplay">
+        <span class="dict-brace">{ }</span>
+        <span style="color: #4a5568; font-size: 0.8rem; margin-left: 0.5rem"
+          >— no keys pressed yet</span
+        >
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>How It Works — Event Flow</h2>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-icon">⌨️</div>
+          <div class="flow-info">
+            <div class="flow-name">Player presses a key</div>
+            <div class="flow-desc">
+              The browser fires a <code>keydown</code> event on the window
+              containing the key name.
+            </div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-icon">📥</div>
+          <div class="flow-info">
+            <div class="flow-name">onKeyDown handler fires</div>
+            <div class="flow-desc">
+              <code>keys[e.key.toLowerCase()] = true</code> — stores the
+              lowercased key as <code>true</code> in the dictionary.
+            </div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-icon">🔍</div>
+          <div class="flow-info">
+            <div class="flow-name">
+              Player.update() calls isDown("w") each frame
+            </div>
+            <div class="flow-desc">
+              Returns <code>keys["w"] === true</code>. While the key is held,
+              this returns <code>true</code> every frame and the player keeps
+              moving.
+            </div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-icon">📤</div>
+          <div class="flow-info">
+            <div class="flow-name">Player releases the key</div>
+            <div class="flow-desc">
+              Browser fires <code>keyup</code>. Handler sets
+              <code>keys["w"] = false</code>. <code>isDown</code> returns false
+              and movement stops next frame.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Code — Line by Line</h2>
+      <div class="code-wrap">
+        <div class="cl">
+          <span class="ln">1</span
+          ><span class="lc"
+            ><span class="kw">export class</span>
+            <span class="ty">InputManager</span> {</span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">2</span
+          ><span class="lc">
+            <span class="kw">private readonly</span> keys:
+            <span class="ty">Record</span>&lt;<span class="ty">string</span>,
+            <span class="ty">boolean</span>&gt; = {};<span class="tag"
+              >dictionary: key name → true/false</span
+            ></span
+          >
+        </div>
+        <div class="cl"><span class="ln">3</span><span class="lc"></span></div>
+        <div class="cl">
+          <span class="ln">4</span
+          ><span class="lc"> <span class="fn">constructor</span>() {</span>
+        </div>
+        <div class="cl hl">
+          <span class="ln">5</span
+          ><span class="lc">
+            window.<span class="fn">addEventListener</span>(<span class="st"
+              >"keydown"</span
+            >, <span class="kw">this</span>.onKeyDown);<span class="tag"
+              >start listening for key presses</span
+            ></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">6</span
+          ><span class="lc">
+            window.<span class="fn">addEventListener</span>(<span class="st"
+              >"keyup"</span
+            >, <span class="kw">this</span>.onKeyUp);<span class="tag"
+              >start listening for key releases</span
+            ></span
+          >
+        </div>
+        <div class="cl">
+          <span class="ln">7</span><span class="lc"> }</span>
+        </div>
+        <div class="cl"><span class="ln">8</span><span class="lc"></span></div>
+        <div class="cl hl">
+          <span class="ln">9</span
+          ><span class="lc">
+            <span class="kw">private readonly</span>
+            <span class="vn">onKeyDown</span> = (e:
+            <span class="ty">KeyboardEvent</span>):
+            <span class="ty">void</span> => {</span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">10</span
+          ><span class="lc">
+            <span class="kw">this</span>.keys[e.key.<span class="fn"
+              >toLowerCase</span
+            >()] = <span class="kw">true</span>;<span class="tag"
+              >mark this key as held</span
+            ></span
+          >
+        </div>
+        <div class="cl">
+          <span class="ln">11</span><span class="lc"> };</span>
+        </div>
+        <div class="cl"><span class="ln">12</span><span class="lc"></span></div>
+        <div class="cl hl">
+          <span class="ln">13</span
+          ><span class="lc">
+            <span class="kw">private readonly</span>
+            <span class="vn">onKeyUp</span> = (e:
+            <span class="ty">KeyboardEvent</span>):
+            <span class="ty">void</span> => {</span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">14</span
+          ><span class="lc">
+            <span class="kw">this</span>.keys[e.key.<span class="fn"
+              >toLowerCase</span
+            >()] = <span class="kw">false</span>;<span class="tag"
+              >mark this key as released</span
+            ></span
+          >
+        </div>
+        <div class="cl">
+          <span class="ln">15</span><span class="lc"> };</span>
+        </div>
+        <div class="cl"><span class="ln">16</span><span class="lc"></span></div>
+        <div class="cl hl">
+          <span class="ln">17</span
+          ><span class="lc">
+            <span class="fn">isDown</span>(key: <span class="ty">string</span>):
+            <span class="ty">boolean</span> {</span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">18</span
+          ><span class="lc">
+            <span class="kw">return</span>
+            <span class="kw">this</span>.keys[key] ===
+            <span class="kw">true</span>;<span class="tag"
+              >called by Player.update() every frame</span
+            ></span
+          >
+        </div>
+        <div class="cl">
+          <span class="ln">19</span><span class="lc"> }</span>
+        </div>
+        <div class="cl"><span class="ln">20</span><span class="lc"></span></div>
+        <div class="cl hl">
+          <span class="ln">21</span
+          ><span class="lc">
+            <span class="fn">dispose</span>():
+            <span class="ty">void</span> {</span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">22</span
+          ><span class="lc">
+            window.<span class="fn">removeEventListener</span>(<span class="st"
+              >"keydown"</span
+            >, <span class="kw">this</span>.onKeyDown);<span class="tag"
+              >clean up when game shuts down</span
+            ></span
+          >
+        </div>
+        <div class="cl">
+          <span class="ln">23</span
+          ><span class="lc">
+            window.<span class="fn">removeEventListener</span>(<span class="st"
+              >"keyup"</span
+            >, <span class="kw">this</span>.onKeyUp);</span
+          >
+        </div>
+        <div class="cl">
+          <span class="ln">24</span><span class="lc"> }</span>
+        </div>
+        <div class="cl">
+          <span class="ln">25</span><span class="lc">}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav">
+      <a href="05-player.html">← Player.ts</a>
+      <a href="index.html">Back to Index →</a>
+    </div>
+
+    <script>
+      const trackedKeys = new Set([
+        "w",
+        "a",
+        "s",
+        "d",
+        "arrowup",
+        "arrowdown",
+        "arrowleft",
+        "arrowright",
+      ]);
+      const state = {};
+
+      // Mark tracked keys with green border
+      document.querySelectorAll(".kb-key").forEach((el) => {
+        if (trackedKeys.has(el.dataset.key)) el.classList.add("tracked");
+      });
+
+      function updateDisplay() {
+        const display = document.getElementById("dictDisplay");
+        const entries = Object.entries(state);
+        if (entries.length === 0) {
+          display.innerHTML =
+            '<span class="dict-brace">{ }</span><span style="color:#4a5568; font-size:0.8rem; margin-left:0.5rem;">— no keys pressed yet</span>';
+          return;
+        }
+        let html = '<span class="dict-brace">{</span><br>';
+        for (const [k, v] of entries) {
+          const cls = v ? "dict-true" : "dict-false";
+          html += `&nbsp;&nbsp;<span class="dict-key">"${k}"</span><span class="dict-colon">: </span><span class="${cls}">${v}</span><br>`;
+        }
+        html += '<span class="dict-brace">}</span>';
+        display.innerHTML = html;
+      }
+
+      document.addEventListener("keydown", (e) => {
+        const k = e.key.toLowerCase();
+        state[k] = true;
+        const el = document.querySelector(`.kb-key[data-key="${k}"]`);
+        if (el) el.classList.add("active");
+        updateDisplay();
+      });
+
+      document.addEventListener("keyup", (e) => {
+        const k = e.key.toLowerCase();
+        state[k] = false;
+        const el = document.querySelector(`.kb-key[data-key="${k}"]`);
+        if (el) el.classList.remove("active");
+        updateDisplay();
+      });
+    </script>
+  </body>
+</html>

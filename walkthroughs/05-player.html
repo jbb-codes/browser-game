@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>05 — Player.ts | Walkthrough</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #0f0f1a;
+        color: #e2e8f0;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        padding: 2rem;
+        max-width: 860px;
+        margin: 0 auto;
+      }
+      header {
+        margin-bottom: 2rem;
+      }
+      .file-tag {
+        display: inline-block;
+        background: #7c5cbf;
+        color: white;
+        font-size: 0.75rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        font-family: monospace;
+        margin-bottom: 0.5rem;
+      }
+      h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.4rem;
+      }
+      .subtitle {
+        color: #94a3b8;
+      }
+      .card {
+        background: #1a1a2e;
+        border: 1px solid #2d2d4a;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+      h2 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #a78bfa;
+        margin-bottom: 1rem;
+      }
+      .bullet {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 0.65rem;
+        align-items: flex-start;
+      }
+      .dot {
+        width: 7px;
+        height: 7px;
+        background: #7c5cbf;
+        border-radius: 50%;
+        margin-top: 0.45rem;
+        flex-shrink: 0;
+      }
+      .bullet p {
+        color: #cbd5e1;
+        font-size: 0.93rem;
+        line-height: 1.6;
+      }
+      code {
+        font-family: monospace;
+        background: #2d2d4a;
+        padding: 0.1rem 0.35rem;
+        border-radius: 3px;
+        color: #a78bfa;
+        font-size: 0.85em;
+      }
+
+      .viz-layout {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+      canvas#player-viz {
+        border-radius: 8px;
+        border: 1px solid #2d2d4a;
+        flex-shrink: 0;
+      }
+      .viz-controls {
+        flex: 1;
+        min-width: 180px;
+      }
+      .control-label {
+        font-size: 0.82rem;
+        color: #94a3b8;
+        margin-bottom: 0.4rem;
+      }
+      input[type="range"] {
+        width: 100%;
+        accent-color: #7c5cbf;
+        margin-bottom: 1rem;
+      }
+      .key-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
+        max-width: 150px;
+        margin-top: 0.5rem;
+      }
+      .key {
+        background: #2d2d4a;
+        border: 1px solid #3d3d5a;
+        border-radius: 6px;
+        padding: 0.5rem;
+        text-align: center;
+        font-size: 0.85rem;
+        font-family: monospace;
+        color: #94a3b8;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.1s;
+      }
+      .key.active {
+        background: #2a1f45;
+        border-color: #7c5cbf;
+        color: #a78bfa;
+      }
+      .key.spacer {
+        visibility: hidden;
+      }
+      .dir-legend {
+        margin-top: 1.25rem;
+      }
+      .dir-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.78rem;
+        color: #64748b;
+        margin-bottom: 0.3rem;
+      }
+      .dir-line {
+        width: 24px;
+        height: 2px;
+        flex-shrink: 0;
+      }
+
+      .math-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+      }
+      .math-step {
+        background: #0f0f1a;
+        border: 1px solid #2d2d4a;
+        border-radius: 8px;
+        padding: 0.7rem 1rem;
+      }
+      .step-num {
+        font-size: 0.7rem;
+        color: #4a5568;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 0.2rem;
+      }
+      .step-code {
+        font-family: monospace;
+        font-size: 0.85rem;
+        color: #a78bfa;
+        margin-bottom: 0.2rem;
+      }
+      .step-why {
+        font-size: 0.8rem;
+        color: #64748b;
+      }
+
+      .code-wrap {
+        background: #0a0a15;
+        border: 1px solid #2d2d4a;
+        border-radius: 8px;
+        padding: 1.2rem;
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 0.87rem;
+        line-height: 1.9;
+        overflow-x: auto;
+      }
+      .cl {
+        display: flex;
+        gap: 1rem;
+      }
+      .ln {
+        color: #3d3d5a;
+        min-width: 1.5rem;
+        text-align: right;
+        user-select: none;
+      }
+      .lc {
+        flex: 1;
+      }
+      .cl.hl {
+        background: #1a1535;
+        border-radius: 3px;
+        margin: 0 -0.5rem;
+        padding: 0 0.5rem;
+      }
+      .kw {
+        color: #c084fc;
+      }
+      .ty {
+        color: #f9a8d4;
+      }
+      .st {
+        color: #86efac;
+      }
+      .fn {
+        color: #60a5fa;
+      }
+      .vn {
+        color: #fde68a;
+      }
+      .nu {
+        color: #fb923c;
+      }
+      .tag {
+        display: inline-block;
+        background: #7c5cbf;
+        color: white;
+        font-size: 0.68rem;
+        padding: 0.08rem 0.4rem;
+        border-radius: 3px;
+        margin-left: 0.75rem;
+        font-family: "Segoe UI", sans-serif;
+        vertical-align: middle;
+      }
+
+      .nav {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+      }
+      .nav a {
+        background: #1a1a2e;
+        border: 1px solid #2d2d4a;
+        color: #a78bfa;
+        text-decoration: none;
+        padding: 0.55rem 1.1rem;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        transition: border-color 0.2s;
+      }
+      .nav a:hover {
+        border-color: #7c5cbf;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="file-tag">src/entities/Player.ts</div>
+      <h1>05 — The Player Character</h1>
+      <p class="subtitle">
+        A box mesh that moves relative to wherever the camera is pointing.
+      </p>
+    </header>
+
+    <div class="card">
+      <h2>What this file does</h2>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          Creates a 1×2×1 box mesh (the player body). Positioned at Y=1 so its
+          bottom edge sits exactly on the ground at Y=0.
+        </p>
+      </div>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          Applies a purple material (<code>Color3(0.6, 0.4, 0.8)</code>) so the
+          player is easy to spot against the green ground.
+        </p>
+      </div>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          In <code>update()</code> each frame, it reads the camera's forward
+          direction, flattens it to the ground plane (removes the Y component),
+          then derives a "right" direction using a cross product.
+        </p>
+      </div>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          WASD / arrow keys add or subtract those direction vectors. The result
+          is normalized (equal speed in all directions) then scaled by
+          <code>SPEED = 0.1</code> units per frame.
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Top-Down View — Rotate Camera, See Axes Change</h2>
+      <p style="color: #64748b; font-size: 0.82rem; margin-bottom: 1rem">
+        Drag the slider to change the camera angle. Hold the WASD buttons to see
+        which direction the player would move.
+      </p>
+      <div class="viz-layout">
+        <canvas id="player-viz" width="280" height="280"></canvas>
+        <div class="viz-controls">
+          <div class="control-label">
+            Camera angle:
+            <span
+              id="camAngleLabel"
+              style="color: #a78bfa; font-family: monospace"
+              >270°</span
+            >
+          </div>
+          <input type="range" id="camAngle" min="0" max="359" value="270" />
+          <div class="control-label">Hold a key:</div>
+          <div class="key-grid">
+            <div class="key spacer"></div>
+            <div class="key" id="key-w" data-key="w">W</div>
+            <div class="key spacer"></div>
+            <div class="key" id="key-a" data-key="a">A</div>
+            <div class="key" id="key-s" data-key="s">S</div>
+            <div class="key" id="key-d" data-key="d">D</div>
+          </div>
+          <div class="dir-legend">
+            <div class="dir-item">
+              <div class="dir-line" style="background: #60a5fa"></div>
+              Forward (W)
+            </div>
+            <div class="dir-item">
+              <div class="dir-line" style="background: #f87171"></div>
+              Right (D)
+            </div>
+            <div class="dir-item">
+              <div class="dir-line" style="background: #fde68a"></div>
+              Resulting move vector
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>How Movement Direction is Calculated</h2>
+      <div class="math-steps">
+        <div class="math-step">
+          <div class="step-num">Step 1</div>
+          <div class="step-code">
+            const forward = camera.getForwardRay().direction
+          </div>
+          <div class="step-why">
+            Ask the camera which way it is looking. Returns a 3D vector pointing
+            into the scene.
+          </div>
+        </div>
+        <div class="math-step">
+          <div class="step-num">Step 2</div>
+          <div class="step-code">
+            const forwardFlat = new Vector3(forward.x, 0, forward.z).normalize()
+          </div>
+          <div class="step-why">
+            Drop the Y component so the player only moves horizontally, not up
+            or down hills. Then normalize to make it length 1.
+          </div>
+        </div>
+        <div class="math-step">
+          <div class="step-num">Step 3</div>
+          <div class="step-code">
+            const right = Vector3.Cross(Vector3.Up(), forwardFlat).normalize()
+          </div>
+          <div class="step-why">
+            The cross product of Up(0,1,0) and Forward always gives a vector
+            pointing 90° to the right. This is how "strafe right" is computed
+            from the camera angle.
+          </div>
+        </div>
+        <div class="math-step">
+          <div class="step-num">Step 4</div>
+          <div class="step-code">move.normalize().scaleInPlace(SPEED)</div>
+          <div class="step-why">
+            Pressing W+D diagonally would produce a vector longer than 1 (faster
+            than moving straight). Normalizing first makes all directions equal
+            speed, then SPEED (0.1) is applied.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Code — Line by Line</h2>
+      <div class="code-wrap">
+        <div class="cl">
+          <span class="ln">12</span
+          ><span class="lc"
+            ><span class="kw">const</span> <span class="vn">SPEED</span> =
+            <span class="nu">0.1</span>;</span
+          >
+        </div>
+        <div class="cl">
+          <span class="ln">17</span
+          ><span class="lc">
+            <span class="fn">constructor</span>(scene:
+            <span class="ty">Scene</span>) {</span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">18</span
+          ><span class="lc">
+            <span class="kw">this</span>.mesh =
+            <span class="ty">MeshBuilder</span>.<span class="fn">CreateBox</span
+            >(<span class="st">"player"</span>, { width:
+            <span class="nu">1</span>, height: <span class="nu">2</span>, depth:
+            <span class="nu">1</span> }, scene);<span class="tag"
+              >1 wide, 2 tall, 1 deep box inside the scene</span
+            ></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">19</span
+          ><span class="lc">
+            <span class="kw">this</span>.mesh.position.y =
+            <span class="nu">1</span>;<span class="tag"
+              >Y=1 so the bottom of the 2-tall box sits at Y=0</span
+            ></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">22</span
+          ><span class="lc">
+            mat.diffuseColor = <span class="kw">new</span>
+            <span class="ty">Color3</span>(<span class="nu">0.6</span>,
+            <span class="nu">0.4</span>, <span class="nu">0.8</span>);<span
+              class="tag"
+              >purple material</span
+            ></span
+          >
+        </div>
+        <div class="cl">
+          <span class="ln">24</span><span class="lc"> }</span>
+        </div>
+        <div class="cl">
+          <span class="ln">26</span
+          ><span class="lc">
+            <span class="fn">update</span>(input:
+            <span class="ty">InputManager</span>, camera:
+            <span class="ty">ArcRotateCamera</span>):
+            <span class="ty">void</span> {</span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">27</span
+          ><span class="lc">
+            <span class="kw">const</span> <span class="vn">forward</span> =
+            camera.<span class="fn">getForwardRay</span>().direction;<span
+              class="tag"
+              >where is the camera looking?</span
+            ></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">28</span
+          ><span class="lc">
+            <span class="kw">const</span> <span class="vn">forwardFlat</span> =
+            <span class="kw">new</span>
+            <span class="ty">Vector3</span>(forward.x,
+            <span class="nu">0</span>, forward.z).<span class="fn"
+              >normalize</span
+            >();<span class="tag">flatten to ground plane (no Y)</span></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">29</span
+          ><span class="lc">
+            <span class="kw">const</span> <span class="vn">right</span> =
+            <span class="ty">Vector3</span>.<span class="fn">Cross</span>(<span
+              class="ty"
+              >Vector3</span
+            >.<span class="fn">Up</span>(),
+            <span class="vn">forwardFlat</span>).<span class="fn"
+              >normalize</span
+            >();<span class="tag">90° right of forward</span></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">33</span
+          ><span class="lc">
+            <span class="kw">if</span> (input.<span class="fn">isDown</span
+            >(<span class="st">"w"</span>)) move.<span class="fn"
+              >addInPlace</span
+            >(forwardFlat);<span class="tag"
+              >W moves toward camera's forward</span
+            ></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">34</span
+          ><span class="lc">
+            <span class="kw">if</span> (input.<span class="fn">isDown</span
+            >(<span class="st">"s"</span>)) move.<span class="fn"
+              >subtractInPlace</span
+            >(forwardFlat);<span class="tag"
+              >S moves away from forward</span
+            ></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">35</span
+          ><span class="lc">
+            <span class="kw">if</span> (input.<span class="fn">isDown</span
+            >(<span class="st">"a"</span>)) move.<span class="fn"
+              >subtractInPlace</span
+            >(right);<span class="tag">A strafes left</span></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">36</span
+          ><span class="lc">
+            <span class="kw">if</span> (input.<span class="fn">isDown</span
+            >(<span class="st">"d"</span>)) move.<span class="fn"
+              >addInPlace</span
+            >(right);<span class="tag">D strafes right</span></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">39</span
+          ><span class="lc">
+            move.<span class="fn">normalize</span>().<span class="fn"
+              >scaleInPlace</span
+            >(<span class="vn">SPEED</span>);<span class="tag"
+              >equal speed in all directions</span
+            ></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">40</span
+          ><span class="lc">
+            <span class="kw">this</span>.mesh.position.<span class="fn"
+              >addInPlace</span
+            >(move);<span class="tag"
+              >apply the movement to the mesh position</span
+            ></span
+          >
+        </div>
+      </div>
+    </div>
+
+    <div class="nav">
+      <a href="04-camera.html">← GameCamera.ts</a>
+      <a href="06-inputManager.html">Next: InputManager.ts →</a>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("player-viz");
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width,
+        H = canvas.height;
+      const cx = W / 2,
+        cy = H / 2;
+
+      let camDeg = 270;
+      const pressedKeys = new Set();
+
+      document
+        .getElementById("camAngle")
+        .addEventListener("input", function () {
+          camDeg = parseFloat(this.value);
+          document.getElementById("camAngleLabel").textContent = camDeg + "°";
+        });
+
+      document.querySelectorAll(".key[data-key]").forEach((btn) => {
+        btn.addEventListener("mousedown", () => {
+          pressedKeys.add(btn.dataset.key);
+          btn.classList.add("active");
+        });
+        btn.addEventListener("mouseup", () => {
+          pressedKeys.delete(btn.dataset.key);
+          btn.classList.remove("active");
+        });
+        btn.addEventListener("mouseleave", () => {
+          pressedKeys.delete(btn.dataset.key);
+          btn.classList.remove("active");
+        });
+      });
+
+      function drawArrow(x1, y1, x2, y2, color) {
+        const angle = Math.atan2(y2 - y1, x2 - x1);
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(
+          x2 - 10 * Math.cos(angle - 0.4),
+          y2 - 10 * Math.sin(angle - 0.4),
+        );
+        ctx.lineTo(
+          x2 - 10 * Math.cos(angle + 0.4),
+          y2 - 10 * Math.sin(angle + 0.4),
+        );
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = "#0a0a15";
+        ctx.fillRect(0, 0, W, H);
+
+        // Grid
+        ctx.strokeStyle = "#1a1a2e";
+        ctx.lineWidth = 1;
+        for (let x = 0; x < W; x += 20) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, H);
+          ctx.stroke();
+        }
+        for (let y = 0; y < H; y += 20) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(W, y);
+          ctx.stroke();
+        }
+
+        const rad = (camDeg * Math.PI) / 180;
+        const fwdX = Math.cos(rad),
+          fwdY = Math.sin(rad);
+        const rgtX = -fwdY,
+          rgtY = fwdX;
+        const L = 72;
+
+        // Forward (blue) and right (red) axes
+        drawArrow(cx, cy, cx + fwdX * L, cy + fwdY * L, "#60a5fa");
+        drawArrow(cx, cy, cx + rgtX * L, cy + rgtY * L, "#f87171");
+
+        // Labels
+        ctx.font = "11px monospace";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#60a5fa";
+        ctx.fillText("W", cx + fwdX * (L + 14), cy + fwdY * (L + 14));
+        ctx.fillStyle = "#f87171";
+        ctx.fillText("D", cx + rgtX * (L + 14), cy + rgtY * (L + 14));
+
+        // Move vector from held keys
+        let mx = 0,
+          my = 0;
+        if (pressedKeys.has("w")) {
+          mx += fwdX;
+          my += fwdY;
+        }
+        if (pressedKeys.has("s")) {
+          mx -= fwdX;
+          my -= fwdY;
+        }
+        if (pressedKeys.has("a")) {
+          mx -= rgtX;
+          my -= rgtY;
+        }
+        if (pressedKeys.has("d")) {
+          mx += rgtX;
+          my += rgtY;
+        }
+
+        if (mx !== 0 || my !== 0) {
+          const len = Math.sqrt(mx * mx + my * my);
+          mx /= len;
+          my /= len;
+          ctx.setLineDash([5, 3]);
+          drawArrow(cx, cy, cx + mx * L * 1.3, cy + my * L * 1.3, "#fde68a");
+          ctx.setLineDash([]);
+          ctx.fillStyle = "#fde68a";
+          ctx.font = "10px monospace";
+          ctx.fillText(
+            "move",
+            cx + mx * (L * 1.3 + 18),
+            cy + my * (L * 1.3 + 18),
+          );
+        }
+
+        // Camera direction indicator
+        ctx.strokeStyle = "#3d3d5a";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.arc(cx, cy, 100, rad - 0.3, rad + 0.3);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = "#4a4a7a";
+        ctx.font = "10px sans-serif";
+        ctx.fillText(
+          "camera",
+          cx + Math.cos(rad) * 112,
+          cy + Math.sin(rad) * 112,
+        );
+
+        // Player box (top-down view)
+        ctx.fillStyle = "#9966cc";
+        ctx.strokeStyle = "#a78bfa";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.rect(cx - 10, cy - 10, 20, 20);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#a78bfa";
+        ctx.font = "10px sans-serif";
+        ctx.fillText("player", cx, cy + 26);
+        ctx.fillStyle = "#4a5568";
+        ctx.font = "9px sans-serif";
+        ctx.fillText("(top-down view)", cx, cy + 38);
+
+        requestAnimationFrame(draw);
+      }
+      draw();
+    </script>
+  </body>
+</html>

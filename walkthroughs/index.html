@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Browser Game — Walkthroughs</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #0f0f1a;
+        color: #e2e8f0;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        min-height: 100vh;
+        padding: 2rem;
+        max-width: 860px;
+        margin: 0 auto;
+      }
+      header {
+        margin-bottom: 2.5rem;
+      }
+      h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+      .subtitle {
+        color: #94a3b8;
+      }
+      .stack-label {
+        display: inline-block;
+        background: #2d2d4a;
+        color: #94a3b8;
+        font-size: 0.75rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 4px;
+        font-family: monospace;
+        margin-bottom: 0.4rem;
+      }
+      .intro {
+        background: #1a1a2e;
+        border: 1px solid #2d2d4a;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        color: #cbd5e1;
+        line-height: 1.7;
+      }
+      .intro p {
+        margin-bottom: 0.75rem;
+      }
+      .intro p:last-child {
+        margin-bottom: 0;
+      }
+      .intro code {
+        font-family: monospace;
+        background: #2d2d4a;
+        padding: 0.1rem 0.35rem;
+        border-radius: 3px;
+        color: #a78bfa;
+        font-size: 0.88em;
+      }
+      .files {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .file-card {
+        background: #1a1a2e;
+        border: 1px solid #2d2d4a;
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        transition:
+          border-color 0.2s,
+          background 0.2s;
+      }
+      .file-card:hover {
+        border-color: #7c5cbf;
+        background: #1f1f3a;
+      }
+      .step-num {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #2d2d4a;
+        min-width: 2.5rem;
+        text-align: center;
+      }
+      .file-info {
+        flex: 1;
+      }
+      .file-path {
+        font-family: monospace;
+        font-size: 0.85rem;
+        color: #7c5cbf;
+        margin-bottom: 0.25rem;
+      }
+      .file-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+      .file-desc {
+        font-size: 0.88rem;
+        color: #94a3b8;
+      }
+      .file-arrow {
+        color: #4a4a7a;
+        font-size: 1.25rem;
+      }
+      .connector {
+        width: 2px;
+        height: 1rem;
+        background: #2d2d4a;
+        margin-left: 3rem;
+      }
+      .note {
+        margin-top: 2rem;
+        color: #4a5568;
+        font-size: 0.82rem;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="stack-label">babylonjs + typescript</span>
+      <h1>Browser Game — Walkthroughs</h1>
+      <p class="subtitle">
+        A visual guide to how each file works, in the order they'd be built.
+      </p>
+    </header>
+
+    <div class="intro">
+      <p>
+        These walkthroughs follow the <strong>implementation order</strong> —
+        the order you'd actually build the game from scratch. Each file depends
+        on the one before it, so reading them in order gives you the full mental
+        model.
+      </p>
+      <p>
+        The core rule in Babylon.js: <code>Engine</code> renders frames.
+        <code>Scene</code> holds everything. Everything else — cameras, meshes,
+        lights, input — is just stuff <em>inside</em> the scene.
+      </p>
+    </div>
+
+    <div class="files">
+      <a class="file-card" href="01-main.html">
+        <div class="step-num">01</div>
+        <div class="file-info">
+          <div class="file-path">src/main.ts</div>
+          <div class="file-title">The Entry Point</div>
+          <div class="file-desc">
+            Where the browser starts. Creates the canvas, engine, and kicks off
+            the render loop.
+          </div>
+        </div>
+        <div class="file-arrow">→</div>
+      </a>
+      <div class="connector"></div>
+      <a class="file-card" href="02-game.html">
+        <div class="step-num">02</div>
+        <div class="file-info">
+          <div class="file-path">src/game/Game.ts</div>
+          <div class="file-title">The Orchestrator</div>
+          <div class="file-desc">
+            Builds and owns all subsystems. Drives the update → render cycle
+            every frame.
+          </div>
+        </div>
+        <div class="file-arrow">→</div>
+      </a>
+      <div class="connector"></div>
+      <a class="file-card" href="03-createScene.html">
+        <div class="step-num">03</div>
+        <div class="file-info">
+          <div class="file-path">src/scene/createScene.ts</div>
+          <div class="file-title">Building the World</div>
+          <div class="file-desc">
+            Creates the Scene container, two lights, and the green ground plane.
+          </div>
+        </div>
+        <div class="file-arrow">→</div>
+      </a>
+      <div class="connector"></div>
+      <a class="file-card" href="04-camera.html">
+        <div class="step-num">04</div>
+        <div class="file-info">
+          <div class="file-path">src/camera/GameCamera.ts</div>
+          <div class="file-title">The Eyes of the Player</div>
+          <div class="file-desc">
+            An orbit camera that circles the player. Controlled by alpha, beta,
+            and radius.
+          </div>
+        </div>
+        <div class="file-arrow">→</div>
+      </a>
+      <div class="connector"></div>
+      <a class="file-card" href="05-player.html">
+        <div class="step-num">05</div>
+        <div class="file-info">
+          <div class="file-path">src/entities/Player.ts</div>
+          <div class="file-title">The Player Character</div>
+          <div class="file-desc">
+            A box mesh that moves relative to the camera direction using WASD /
+            arrow keys.
+          </div>
+        </div>
+        <div class="file-arrow">→</div>
+      </a>
+      <div class="connector"></div>
+      <a class="file-card" href="06-inputManager.html">
+        <div class="step-num">06</div>
+        <div class="file-info">
+          <div class="file-path">src/input/InputManager.ts</div>
+          <div class="file-title">Listening to the Player</div>
+          <div class="file-desc">
+            Tracks which keys are held down at any moment using a simple
+            dictionary.
+          </div>
+        </div>
+        <div class="file-arrow">→</div>
+      </a>
+    </div>
+
+    <p class="note">
+      Open each walkthrough in order — each one builds on the last.
+    </p>
+  </body>
+</html>

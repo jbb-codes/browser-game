@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>01 — main.ts | Walkthrough</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #0f0f1a;
+        color: #e2e8f0;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        padding: 2rem;
+        max-width: 860px;
+        margin: 0 auto;
+      }
+      header {
+        margin-bottom: 2rem;
+      }
+      .file-tag {
+        display: inline-block;
+        background: #7c5cbf;
+        color: white;
+        font-size: 0.75rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        font-family: monospace;
+        margin-bottom: 0.5rem;
+      }
+      h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.4rem;
+      }
+      .subtitle {
+        color: #94a3b8;
+      }
+      .card {
+        background: #1a1a2e;
+        border: 1px solid #2d2d4a;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+      h2 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #a78bfa;
+        margin-bottom: 1rem;
+      }
+      .bullet {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 0.65rem;
+        align-items: flex-start;
+      }
+      .dot {
+        width: 7px;
+        height: 7px;
+        background: #7c5cbf;
+        border-radius: 50%;
+        margin-top: 0.45rem;
+        flex-shrink: 0;
+      }
+      .bullet p {
+        color: #cbd5e1;
+        font-size: 0.93rem;
+        line-height: 1.6;
+      }
+      code {
+        font-family: monospace;
+        background: #2d2d4a;
+        padding: 0.1rem 0.35rem;
+        border-radius: 3px;
+        color: #a78bfa;
+        font-size: 0.85em;
+      }
+      .flow {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+      .flow-box {
+        background: #2d2d4a;
+        border: 2px solid #3d3d5a;
+        border-radius: 8px;
+        padding: 0.65rem 1rem;
+        text-align: center;
+      }
+      .flow-box.active {
+        border-color: #7c5cbf;
+        background: #2a1f45;
+      }
+      .flow-label {
+        font-size: 0.65rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 0.15rem;
+      }
+      .flow-name {
+        font-family: monospace;
+        font-size: 0.9rem;
+        color: #a78bfa;
+        font-weight: 600;
+      }
+      .arrow {
+        color: #4a4a7a;
+        font-size: 1.2rem;
+      }
+      .code-wrap {
+        background: #0a0a15;
+        border: 1px solid #2d2d4a;
+        border-radius: 8px;
+        padding: 1.2rem;
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 0.87rem;
+        line-height: 1.9;
+        overflow-x: auto;
+      }
+      .cl {
+        display: flex;
+        gap: 1rem;
+      }
+      .ln {
+        color: #3d3d5a;
+        min-width: 1.2rem;
+        text-align: right;
+        user-select: none;
+      }
+      .lc {
+        flex: 1;
+      }
+      .cl.hl {
+        background: #1a1535;
+        border-radius: 3px;
+        margin: 0 -0.5rem;
+        padding: 0 0.5rem;
+      }
+      .kw {
+        color: #c084fc;
+      }
+      .ty {
+        color: #f9a8d4;
+      }
+      .st {
+        color: #86efac;
+      }
+      .fn {
+        color: #60a5fa;
+      }
+      .vn {
+        color: #fde68a;
+      }
+      .tag {
+        display: inline-block;
+        background: #7c5cbf;
+        color: white;
+        font-size: 0.68rem;
+        padding: 0.08rem 0.4rem;
+        border-radius: 3px;
+        margin-left: 0.75rem;
+        font-family: "Segoe UI", sans-serif;
+        vertical-align: middle;
+      }
+      .loop-viz {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+      }
+      .counter-block {
+        text-align: center;
+      }
+      .big-num {
+        font-family: monospace;
+        font-size: 2.2rem;
+        font-weight: bold;
+        color: #7c5cbf;
+      }
+      .num-label {
+        font-size: 0.78rem;
+        color: #64748b;
+        margin-top: 0.2rem;
+      }
+      .sweep-track {
+        flex: 1;
+        min-width: 180px;
+        height: 54px;
+        background: #0a0a15;
+        border-radius: 8px;
+        border: 1px solid #2d2d4a;
+        overflow: hidden;
+        position: relative;
+      }
+      .sweep-bar {
+        position: absolute;
+        left: -100%;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          #7c5cbf55,
+          #7c5cbf,
+          #7c5cbf55,
+          transparent
+        );
+        animation: sweep 1s linear infinite;
+      }
+      .sweep-label {
+        text-align: center;
+        margin-top: 0.4rem;
+        font-family: monospace;
+        font-size: 0.78rem;
+        color: #a78bfa;
+      }
+      @keyframes sweep {
+        from {
+          left: -100%;
+        }
+        to {
+          left: 100%;
+        }
+      }
+      .nav {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+      }
+      .nav a {
+        background: #1a1a2e;
+        border: 1px solid #2d2d4a;
+        color: #a78bfa;
+        text-decoration: none;
+        padding: 0.55rem 1.1rem;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        transition: border-color 0.2s;
+      }
+      .nav a:hover {
+        border-color: #7c5cbf;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="file-tag">src/main.ts</div>
+      <h1>01 — The Entry Point</h1>
+      <p class="subtitle">
+        Where the browser starts. Every other file flows from here.
+      </p>
+    </header>
+
+    <div class="card">
+      <h2>What this file does</h2>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          Grabs the <code>&lt;canvas&gt;</code> element from the HTML page —
+          this is the rectangle Babylon.js draws into.
+        </p>
+      </div>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          Creates a Babylon <code>Engine</code>, which sets up WebGL (the
+          browser's 3D graphics system) and connects it to the canvas.
+        </p>
+      </div>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          Creates your <code>Game</code>, which builds the scene, player,
+          camera, and input system.
+        </p>
+      </div>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          Starts the <strong>render loop</strong> — tells the engine to call
+          <code>game.render()</code> roughly 60 times per second, forever.
+        </p>
+      </div>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          Listens for window resize so the canvas never looks stretched or
+          blurry.
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>The Chain of Creation</h2>
+      <div class="flow">
+        <div class="flow-box">
+          <div class="flow-label">HTML page</div>
+          <div class="flow-name">&lt;canvas&gt;</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="flow-box active">
+          <div class="flow-label">Babylon.js</div>
+          <div class="flow-name">Engine</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="flow-box">
+          <div class="flow-label">Your code</div>
+          <div class="flow-name">Game</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="flow-box">
+          <div class="flow-label">runs forever</div>
+          <div class="flow-name">render loop</div>
+        </div>
+      </div>
+      <p style="color: #64748b; font-size: 0.83rem; margin-top: 1rem">
+        The canvas is just a blank rectangle. The Engine hooks WebGL into it.
+        Game builds the world. The render loop keeps it alive.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Code — Line by Line</h2>
+      <div class="code-wrap">
+        <div class="cl">
+          <span class="ln">1</span
+          ><span class="lc"
+            ><span class="kw">import</span> { <span class="ty">Engine</span> }
+            <span class="kw">from</span>
+            <span class="st">"@babylonjs/core"</span>;</span
+          >
+        </div>
+        <div class="cl">
+          <span class="ln">2</span
+          ><span class="lc"
+            ><span class="kw">import</span> { <span class="ty">Game</span> }
+            <span class="kw">from</span>
+            <span class="st">"./game/Game"</span>;</span
+          >
+        </div>
+        <div class="cl"><span class="ln">3</span><span class="lc"></span></div>
+        <div class="cl hl">
+          <span class="ln">4</span
+          ><span class="lc"
+            ><span class="kw">const</span> <span class="vn">canvas</span> =
+            document.<span class="fn">getElementById</span>(<span class="st"
+              >"renderCanvas"</span
+            >) <span class="kw">as</span>
+            <span class="ty">HTMLCanvasElement</span>;<span class="tag"
+              >find the &lt;canvas&gt; in the HTML</span
+            ></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">5</span
+          ><span class="lc"
+            ><span class="kw">const</span> <span class="vn">engine</span> =
+            <span class="kw">new</span> <span class="ty">Engine</span>(<span
+              class="vn"
+              >canvas</span
+            >, <span class="kw">true</span>);<span class="tag"
+              >start WebGL — true = antialiasing on</span
+            ></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">6</span
+          ><span class="lc"
+            ><span class="kw">const</span> <span class="vn">game</span> =
+            <span class="kw">new</span> <span class="ty">Game</span>(<span
+              class="vn"
+              >engine</span
+            >, <span class="vn">canvas</span>);<span class="tag"
+              >build the entire game world</span
+            ></span
+          >
+        </div>
+        <div class="cl"><span class="ln">7</span><span class="lc"></span></div>
+        <div class="cl hl">
+          <span class="ln">8</span
+          ><span class="lc"
+            ><span class="vn">engine</span>.<span class="fn">runRenderLoop</span
+            >(() => <span class="vn">game</span>.<span class="fn">render</span
+            >());<span class="tag">draw a new frame ~60× per second</span></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">9</span
+          ><span class="lc"
+            >window.<span class="fn">addEventListener</span>(<span class="st"
+              >"resize"</span
+            >, () => <span class="vn">engine</span>.<span class="fn"
+              >resize</span
+            >());<span class="tag"
+              >stay sharp when the window resizes</span
+            ></span
+          >
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>The Render Loop — Live</h2>
+      <p style="color: #64748b; font-size: 0.83rem; margin-bottom: 1rem">
+        <code>runRenderLoop()</code> calls your function on every animation
+        frame. Here it is, happening right now in this tab:
+      </p>
+      <div class="loop-viz">
+        <div class="counter-block">
+          <div class="big-num" id="frameCount">0</div>
+          <div class="num-label">frames rendered</div>
+        </div>
+        <div class="counter-block">
+          <div class="big-num" id="fpsDisplay" style="color: #60a5fa">--</div>
+          <div class="num-label">frames per second</div>
+        </div>
+        <div style="flex: 1; min-width: 180px">
+          <div class="sweep-track"><div class="sweep-bar"></div></div>
+          <div class="sweep-label">game.render() ← called each frame</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav">
+      <a href="index.html">← Index</a>
+      <a href="02-game.html">Next: Game.ts →</a>
+    </div>
+
+    <script>
+      let frame = 0,
+        fpsFrames = 0;
+      let lastSec = performance.now();
+      function loop(now) {
+        frame++;
+        fpsFrames++;
+        document.getElementById("frameCount").textContent =
+          frame.toLocaleString();
+        if (now - lastSec >= 1000) {
+          document.getElementById("fpsDisplay").textContent = fpsFrames;
+          fpsFrames = 0;
+          lastSec = now;
+        }
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>02 — Game.ts | Walkthrough</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #0f0f1a;
+        color: #e2e8f0;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        padding: 2rem;
+        max-width: 860px;
+        margin: 0 auto;
+      }
+      header {
+        margin-bottom: 2rem;
+      }
+      .file-tag {
+        display: inline-block;
+        background: #7c5cbf;
+        color: white;
+        font-size: 0.75rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        font-family: monospace;
+        margin-bottom: 0.5rem;
+      }
+      h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.4rem;
+      }
+      .subtitle {
+        color: #94a3b8;
+      }
+      .card {
+        background: #1a1a2e;
+        border: 1px solid #2d2d4a;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+      h2 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #a78bfa;
+        margin-bottom: 1rem;
+      }
+      .bullet {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 0.65rem;
+        align-items: flex-start;
+      }
+      .dot {
+        width: 7px;
+        height: 7px;
+        background: #7c5cbf;
+        border-radius: 50%;
+        margin-top: 0.45rem;
+        flex-shrink: 0;
+      }
+      .bullet p {
+        color: #cbd5e1;
+        font-size: 0.93rem;
+        line-height: 1.6;
+      }
+      code {
+        font-family: monospace;
+        background: #2d2d4a;
+        padding: 0.1rem 0.35rem;
+        border-radius: 3px;
+        color: #a78bfa;
+        font-size: 0.85em;
+      }
+
+      /* Hub diagram */
+      .hub-wrap {
+        display: flex;
+        justify-content: center;
+        padding: 1rem 0;
+      }
+      .hub-diagram {
+        position: relative;
+        width: 340px;
+        height: 280px;
+      }
+      .hub-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #2a1f45;
+        border: 2px solid #7c5cbf;
+        border-radius: 10px;
+        padding: 0.75rem 1.25rem;
+        text-align: center;
+        z-index: 2;
+      }
+      .hub-center .lbl {
+        font-size: 0.65rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .hub-center .nm {
+        font-family: monospace;
+        font-size: 1.1rem;
+        color: #a78bfa;
+        font-weight: 700;
+      }
+      .spoke {
+        position: absolute;
+        background: #1a1a2e;
+        border: 1px solid #3d3d5a;
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        text-align: center;
+        width: 110px;
+      }
+      .spoke .slbl {
+        font-size: 0.6rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.1rem;
+      }
+      .spoke .snm {
+        font-family: monospace;
+        font-size: 0.82rem;
+        color: #e2e8f0;
+        font-weight: 600;
+      }
+      .spoke-top {
+        top: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .spoke-right {
+        right: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .spoke-bottom {
+        bottom: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .spoke-left {
+        left: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .line {
+        position: absolute;
+        background: #2d2d4a;
+        z-index: 1;
+      }
+      .line-top {
+        width: 2px;
+        top: 60px;
+        height: 55px;
+        left: calc(50% - 1px);
+      }
+      .line-bottom {
+        width: 2px;
+        bottom: 60px;
+        height: 55px;
+        left: calc(50% - 1px);
+      }
+      .line-right {
+        height: 2px;
+        right: 118px;
+        width: 50px;
+        top: calc(50% - 1px);
+      }
+      .line-left {
+        height: 2px;
+        left: 118px;
+        width: 50px;
+        top: calc(50% - 1px);
+      }
+
+      /* Build order */
+      .build-order {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .build-step {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: #0f0f1a;
+        border: 1px solid #2d2d4a;
+        border-radius: 8px;
+        padding: 0.65rem 1rem;
+      }
+      .build-num {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #3d3d5a;
+        min-width: 1.5rem;
+      }
+      .build-code {
+        font-family: monospace;
+        font-size: 0.85rem;
+        color: #a78bfa;
+        flex: 1;
+      }
+      .build-why {
+        font-size: 0.82rem;
+        color: #64748b;
+      }
+
+      /* Frame cycle animation */
+      .live-cycle {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+      }
+      .phase {
+        flex: 1;
+        min-width: 120px;
+        text-align: center;
+        padding: 0.75rem;
+        border-radius: 8px;
+        border: 1px solid #2d2d4a;
+        font-family: monospace;
+        font-size: 0.88rem;
+        color: #64748b;
+        transition: all 0.15s;
+      }
+      .phase.lit {
+        border-color: #7c5cbf;
+        background: #2a1f45;
+        color: #a78bfa;
+      }
+
+      /* Code block */
+      .code-wrap {
+        background: #0a0a15;
+        border: 1px solid #2d2d4a;
+        border-radius: 8px;
+        padding: 1.2rem;
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 0.87rem;
+        line-height: 1.9;
+        overflow-x: auto;
+      }
+      .cl {
+        display: flex;
+        gap: 1rem;
+      }
+      .ln {
+        color: #3d3d5a;
+        min-width: 1.5rem;
+        text-align: right;
+        user-select: none;
+      }
+      .lc {
+        flex: 1;
+      }
+      .cl.hl {
+        background: #1a1535;
+        border-radius: 3px;
+        margin: 0 -0.5rem;
+        padding: 0 0.5rem;
+      }
+      .kw {
+        color: #c084fc;
+      }
+      .ty {
+        color: #f9a8d4;
+      }
+      .st {
+        color: #86efac;
+      }
+      .fn {
+        color: #60a5fa;
+      }
+      .vn {
+        color: #fde68a;
+      }
+      .tag {
+        display: inline-block;
+        background: #7c5cbf;
+        color: white;
+        font-size: 0.68rem;
+        padding: 0.08rem 0.4rem;
+        border-radius: 3px;
+        margin-left: 0.75rem;
+        font-family: "Segoe UI", sans-serif;
+        vertical-align: middle;
+      }
+
+      .nav {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+      }
+      .nav a {
+        background: #1a1a2e;
+        border: 1px solid #2d2d4a;
+        color: #a78bfa;
+        text-decoration: none;
+        padding: 0.55rem 1.1rem;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        transition: border-color 0.2s;
+      }
+      .nav a:hover {
+        border-color: #7c5cbf;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="file-tag">src/game/Game.ts</div>
+      <h1>02 — The Orchestrator</h1>
+      <p class="subtitle">
+        The class that owns everything and drives the update → render cycle.
+      </p>
+    </header>
+
+    <div class="card">
+      <h2>What this file does</h2>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          <code>Game</code> is the top-level class. It owns the scene, player,
+          camera, and input — and holds them together for the entire game
+          session.
+        </p>
+      </div>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          The constructor builds all four subsystems in a specific order — scene
+          must exist before player or camera can be created inside it.
+        </p>
+      </div>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          It registers an <code>onBeforeRenderObservable</code> — a Babylon hook
+          that fires just before each frame is drawn. This is where game logic
+          runs.
+        </p>
+      </div>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          <code>update()</code> tells the player to move based on input and
+          camera direction. <code>render()</code> tells the scene to draw
+          itself.
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Game Owns Four Things</h2>
+      <div class="hub-wrap">
+        <div class="hub-diagram">
+          <div class="line line-top"></div>
+          <div class="line line-bottom"></div>
+          <div class="line line-right"></div>
+          <div class="line line-left"></div>
+          <div class="hub-center">
+            <div class="lbl">class</div>
+            <div class="nm">Game</div>
+          </div>
+          <div class="spoke spoke-top">
+            <div class="slbl">Scene</div>
+            <div class="snm">scene</div>
+          </div>
+          <div class="spoke spoke-right">
+            <div class="slbl">Camera</div>
+            <div class="snm">gameCamera</div>
+          </div>
+          <div class="spoke spoke-bottom">
+            <div class="slbl">Input</div>
+            <div class="snm">input</div>
+          </div>
+          <div class="spoke spoke-left">
+            <div class="slbl">Player</div>
+            <div class="snm">player</div>
+          </div>
+        </div>
+      </div>
+      <p style="color: #64748b; font-size: 0.83rem; text-align: center">
+        Created once in the constructor and kept alive for the entire game
+        session.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Constructor Build Order — Why It Matters</h2>
+      <div class="build-order">
+        <div class="build-step">
+          <div class="build-num">1</div>
+          <div class="build-code">createScene(engine)</div>
+          <div class="build-why">
+            Scene must exist first — everything else lives inside it
+          </div>
+        </div>
+        <div class="build-step">
+          <div class="build-num">2</div>
+          <div class="build-code">new InputManager()</div>
+          <div class="build-why">
+            Doesn't need the scene — just starts listening to the keyboard
+          </div>
+        </div>
+        <div class="build-step">
+          <div class="build-num">3</div>
+          <div class="build-code">new Player(scene)</div>
+          <div class="build-why">
+            Creates a mesh inside the scene — scene must already exist
+          </div>
+        </div>
+        <div class="build-step">
+          <div class="build-num">4</div>
+          <div class="build-code">
+            new GameCamera(scene, canvas, player.mesh)
+          </div>
+          <div class="build-why">
+            Needs both the scene and the player's mesh to orbit around
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>The Frame Cycle — Every ~16ms</h2>
+      <div class="live-cycle">
+        <div class="phase" id="p1">onBeforeRender fires</div>
+        <div style="color: #3d3d5a">→</div>
+        <div class="phase" id="p2">update()</div>
+        <div style="color: #3d3d5a">→</div>
+        <div class="phase" id="p3">scene.render()</div>
+      </div>
+      <p style="color: #64748b; font-size: 0.83rem; margin-top: 1rem">
+        Babylon fires the observable, your logic runs, the scene draws. Repeats
+        ~60× per second.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Code — Line by Line</h2>
+      <div class="code-wrap">
+        <div class="cl">
+          <span class="ln">7</span
+          ><span class="lc"
+            ><span class="kw">export class</span>
+            <span class="ty">Game</span> {</span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">8</span
+          ><span class="lc">
+            <span class="kw">readonly</span> scene:
+            <span class="ty">Scene</span>;<span class="tag"
+              >public — other code can read the scene</span
+            ></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">9</span
+          ><span class="lc">
+            <span class="kw">private readonly</span> player:
+            <span class="ty">Player</span>;<span class="tag"
+              >private — only Game touches these three</span
+            ></span
+          >
+        </div>
+        <div class="cl">
+          <span class="ln">10</span
+          ><span class="lc">
+            <span class="kw">private readonly</span> gameCamera:
+            <span class="ty">GameCamera</span>;</span
+          >
+        </div>
+        <div class="cl">
+          <span class="ln">11</span
+          ><span class="lc">
+            <span class="kw">private readonly</span> input:
+            <span class="ty">InputManager</span>;</span
+          >
+        </div>
+        <div class="cl"><span class="ln">12</span><span class="lc"></span></div>
+        <div class="cl">
+          <span class="ln">13</span
+          ><span class="lc">
+            <span class="fn">constructor</span>(engine:
+            <span class="ty">Engine</span>, canvas:
+            <span class="ty">HTMLCanvasElement</span>) {</span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">14</span
+          ><span class="lc">
+            <span class="kw">this</span>.scene =
+            <span class="fn">createScene</span>(engine);<span class="tag"
+              >step 1 — must be first</span
+            ></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">15</span
+          ><span class="lc">
+            <span class="kw">this</span>.input = <span class="kw">new</span>
+            <span class="ty">InputManager</span>();<span class="tag"
+              >step 2 — no scene dependency</span
+            ></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">16</span
+          ><span class="lc">
+            <span class="kw">this</span>.player = <span class="kw">new</span>
+            <span class="ty">Player</span>(<span class="kw">this</span
+            >.scene);<span class="tag">step 3 — needs scene</span></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">17</span
+          ><span class="lc">
+            <span class="kw">this</span>.gameCamera =
+            <span class="kw">new</span> <span class="ty">GameCamera</span>(<span
+              class="kw"
+              >this</span
+            >.scene, canvas, <span class="kw">this</span>.player.mesh);<span
+              class="tag"
+              >step 4 — needs scene + player</span
+            ></span
+          >
+        </div>
+        <div class="cl"><span class="ln">18</span><span class="lc"></span></div>
+        <div class="cl hl">
+          <span class="ln">19</span
+          ><span class="lc">
+            <span class="kw">this</span>.scene.onBeforeRenderObservable.<span
+              class="fn"
+              >add</span
+            >(() => <span class="kw">this</span>.<span class="fn">update</span
+            >());<span class="tag">hook into Babylon's frame loop</span></span
+          >
+        </div>
+        <div class="cl">
+          <span class="ln">20</span><span class="lc"> }</span>
+        </div>
+        <div class="cl"><span class="ln">21</span><span class="lc"></span></div>
+        <div class="cl hl">
+          <span class="ln">22</span
+          ><span class="lc">
+            <span class="kw">private</span> <span class="fn">update</span>():
+            <span class="ty">void</span> {<span class="tag"
+              >runs before every frame is drawn</span
+            ></span
+          >
+        </div>
+        <div class="cl">
+          <span class="ln">23</span
+          ><span class="lc">
+            <span class="kw">this</span>.player.<span class="fn">update</span
+            >(<span class="kw">this</span>.input,
+            <span class="kw">this</span>.gameCamera.camera);</span
+          >
+        </div>
+        <div class="cl">
+          <span class="ln">24</span><span class="lc"> }</span>
+        </div>
+        <div class="cl"><span class="ln">25</span><span class="lc"></span></div>
+        <div class="cl hl">
+          <span class="ln">26</span
+          ><span class="lc">
+            <span class="fn">render</span>():
+            <span class="ty">void</span> {<span class="tag"
+              >called by runRenderLoop in main.ts</span
+            ></span
+          >
+        </div>
+        <div class="cl">
+          <span class="ln">27</span
+          ><span class="lc">
+            <span class="kw">this</span>.scene.<span class="fn">render</span
+            >();</span
+          >
+        </div>
+        <div class="cl">
+          <span class="ln">28</span><span class="lc"> }</span>
+        </div>
+        <div class="cl">
+          <span class="ln">29</span><span class="lc">}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav">
+      <a href="01-main.html">← main.ts</a>
+      <a href="03-createScene.html">Next: createScene.ts →</a>
+    </div>
+
+    <script>
+      const phases = ["p1", "p2", "p3"];
+      let i = 0;
+      function tick() {
+        phases.forEach((id) =>
+          document.getElementById(id).classList.remove("lit"),
+        );
+        document.getElementById(phases[i]).classList.add("lit");
+        i = (i + 1) % phases.length;
+      }
+      tick();
+      setInterval(tick, 500);
+    </script>
+  </body>
+</html>

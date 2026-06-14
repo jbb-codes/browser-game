@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>03 — createScene.ts | Walkthrough</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #0f0f1a;
+        color: #e2e8f0;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        padding: 2rem;
+        max-width: 860px;
+        margin: 0 auto;
+      }
+      header {
+        margin-bottom: 2rem;
+      }
+      .file-tag {
+        display: inline-block;
+        background: #7c5cbf;
+        color: white;
+        font-size: 0.75rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        font-family: monospace;
+        margin-bottom: 0.5rem;
+      }
+      h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.4rem;
+      }
+      .subtitle {
+        color: #94a3b8;
+      }
+      .card {
+        background: #1a1a2e;
+        border: 1px solid #2d2d4a;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+      h2 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #a78bfa;
+        margin-bottom: 1rem;
+      }
+      .bullet {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 0.65rem;
+        align-items: flex-start;
+      }
+      .dot {
+        width: 7px;
+        height: 7px;
+        background: #7c5cbf;
+        border-radius: 50%;
+        margin-top: 0.45rem;
+        flex-shrink: 0;
+      }
+      .bullet p {
+        color: #cbd5e1;
+        font-size: 0.93rem;
+        line-height: 1.6;
+      }
+      code {
+        font-family: monospace;
+        background: #2d2d4a;
+        padding: 0.1rem 0.35rem;
+        border-radius: 3px;
+        color: #a78bfa;
+        font-size: 0.85em;
+      }
+
+      .scene-canvas-wrap {
+        display: flex;
+        justify-content: center;
+        padding: 1rem 0;
+      }
+      canvas#scene-viz {
+        border-radius: 8px;
+        border: 1px solid #2d2d4a;
+      }
+      .legend {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.82rem;
+        color: #94a3b8;
+      }
+      .legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+
+      .layers {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .layer {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: #0f0f1a;
+        border: 1px solid #2d2d4a;
+        border-radius: 8px;
+        padding: 0.7rem 1rem;
+      }
+      .layer-icon {
+        font-size: 1.4rem;
+        min-width: 2rem;
+        text-align: center;
+      }
+      .layer-info {
+        flex: 1;
+      }
+      .layer-name {
+        font-family: monospace;
+        font-size: 0.85rem;
+        color: #a78bfa;
+        margin-bottom: 0.15rem;
+      }
+      .layer-desc {
+        font-size: 0.82rem;
+        color: #64748b;
+      }
+      .layer-value {
+        font-family: monospace;
+        font-size: 0.75rem;
+        color: #4a6a8a;
+        margin-top: 0.1rem;
+      }
+
+      .code-wrap {
+        background: #0a0a15;
+        border: 1px solid #2d2d4a;
+        border-radius: 8px;
+        padding: 1.2rem;
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 0.87rem;
+        line-height: 1.9;
+        overflow-x: auto;
+      }
+      .cl {
+        display: flex;
+        gap: 1rem;
+      }
+      .ln {
+        color: #3d3d5a;
+        min-width: 1.5rem;
+        text-align: right;
+        user-select: none;
+      }
+      .lc {
+        flex: 1;
+      }
+      .cl.hl {
+        background: #1a1535;
+        border-radius: 3px;
+        margin: 0 -0.5rem;
+        padding: 0 0.5rem;
+      }
+      .kw {
+        color: #c084fc;
+      }
+      .ty {
+        color: #f9a8d4;
+      }
+      .st {
+        color: #86efac;
+      }
+      .fn {
+        color: #60a5fa;
+      }
+      .vn {
+        color: #fde68a;
+      }
+      .nu {
+        color: #fb923c;
+      }
+      .tag {
+        display: inline-block;
+        background: #7c5cbf;
+        color: white;
+        font-size: 0.68rem;
+        padding: 0.08rem 0.4rem;
+        border-radius: 3px;
+        margin-left: 0.75rem;
+        font-family: "Segoe UI", sans-serif;
+        vertical-align: middle;
+      }
+
+      .nav {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+      }
+      .nav a {
+        background: #1a1a2e;
+        border: 1px solid #2d2d4a;
+        color: #a78bfa;
+        text-decoration: none;
+        padding: 0.55rem 1.1rem;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        transition: border-color 0.2s;
+      }
+      .nav a:hover {
+        border-color: #7c5cbf;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="file-tag">src/scene/createScene.ts</div>
+      <h1>03 — Building the World</h1>
+      <p class="subtitle">
+        Creates the Scene container, two lights, and the ground plane.
+      </p>
+    </header>
+
+    <div class="card">
+      <h2>What this file does</h2>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          Creates a <code>Scene</code> — the container that holds every light,
+          mesh, and camera in your game world. It needs the
+          <code>Engine</code> to know how to render itself.
+        </p>
+      </div>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          Adds a <strong>HemisphericLight</strong> — soft ambient light from
+          directly above, like an overcast sky. Gives everything a base
+          brightness (intensity 0.6).
+        </p>
+      </div>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          Adds a <strong>DirectionalLight</strong> (the sun) — comes from a
+          fixed angle, creating directional shading and the feel of sunlight
+          (intensity 0.8).
+        </p>
+      </div>
+      <div class="bullet">
+        <div class="dot"></div>
+        <p>
+          Creates a flat <strong>ground mesh</strong> (40×40 units) with a green
+          material, then returns the completed scene back to
+          <code>Game.ts</code>.
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>What Gets Built — Animated</h2>
+      <div class="scene-canvas-wrap">
+        <canvas id="scene-viz" width="500" height="300"></canvas>
+      </div>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background: #88ccff"></div>
+          HemisphericLight (ambient sky)
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: #ffe066"></div>
+          DirectionalLight (sun)
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: #4a8a3a"></div>
+          Ground mesh (40×40)
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>What Gets Added to the Scene</h2>
+      <div class="layers">
+        <div class="layer">
+          <div class="layer-icon">🌐</div>
+          <div class="layer-info">
+            <div class="layer-name">new Scene(engine)</div>
+            <div class="layer-desc">
+              The container. Nothing can exist without it. Receives the engine
+              so it knows how to render.
+            </div>
+          </div>
+        </div>
+        <div class="layer">
+          <div class="layer-icon">🌤</div>
+          <div class="layer-info">
+            <div class="layer-name">HemisphericLight — "ambientLight"</div>
+            <div class="layer-desc">
+              Shines from directly above (0, 1, 0). Lights everything evenly
+              with no harsh shadows.
+            </div>
+            <div class="layer-value">
+              direction: Vector3(0,1,0) · intensity: 0.6
+            </div>
+          </div>
+        </div>
+        <div class="layer">
+          <div class="layer-icon">☀️</div>
+          <div class="layer-info">
+            <div class="layer-name">DirectionalLight — "sun"</div>
+            <div class="layer-desc">
+              Shines from upper-left-front. Creates directional shading that
+              makes 3D shapes feel solid.
+            </div>
+            <div class="layer-value">
+              direction: Vector3(-1,-2,-1) · intensity: 0.8
+            </div>
+          </div>
+        </div>
+        <div class="layer">
+          <div class="layer-icon">🟩</div>
+          <div class="layer-info">
+            <div class="layer-name">MeshBuilder.CreateGround — "ground"</div>
+            <div class="layer-desc">
+              A flat plane at Y=0. Green material applied using RGB values (each
+              channel is 0.0–1.0).
+            </div>
+            <div class="layer-value">
+              width: 40 · height: 40 · Color3(0.3, 0.6, 0.2) ≈ forest green
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Code — Line by Line</h2>
+      <div class="code-wrap">
+        <div class="cl">
+          <span class="ln">12</span
+          ><span class="lc"
+            ><span class="kw">export function</span>
+            <span class="fn">createScene</span>(engine:
+            <span class="ty">Engine</span>):
+            <span class="ty">Scene</span> {</span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">13</span
+          ><span class="lc">
+            <span class="kw">const</span> <span class="vn">scene</span> =
+            <span class="kw">new</span>
+            <span class="ty">Scene</span>(engine);<span class="tag"
+              >create the world container</span
+            ></span
+          >
+        </div>
+        <div class="cl"><span class="ln">14</span><span class="lc"></span></div>
+        <div class="cl hl">
+          <span class="ln">15</span
+          ><span class="lc">
+            <span class="kw">new</span>
+            <span class="ty">HemisphericLight</span>(<span class="st"
+              >"ambientLight"</span
+            >, <span class="kw">new</span> <span class="ty">Vector3</span>(<span
+              class="nu"
+              >0</span
+            >,<span class="nu">1</span>,<span class="nu">0</span>),
+            scene).intensity = <span class="nu">0.6</span>;<span class="tag"
+              >soft sky light from above</span
+            ></span
+          >
+        </div>
+        <div class="cl"><span class="ln">16</span><span class="lc"></span></div>
+        <div class="cl hl">
+          <span class="ln">17</span
+          ><span class="lc">
+            <span class="kw">const</span> <span class="vn">sun</span> =
+            <span class="kw">new</span>
+            <span class="ty">DirectionalLight</span>(<span class="st"
+              >"sun"</span
+            >, <span class="kw">new</span> <span class="ty">Vector3</span>(<span
+              class="nu"
+              >-1</span
+            >,<span class="nu">-2</span>,<span class="nu">-1</span>),
+            scene);<span class="tag"
+              >angled sunlight from upper-left</span
+            ></span
+          >
+        </div>
+        <div class="cl">
+          <span class="ln">18</span
+          ><span class="lc">
+            <span class="vn">sun</span>.intensity =
+            <span class="nu">0.8</span>;</span
+          >
+        </div>
+        <div class="cl"><span class="ln">19</span><span class="lc"></span></div>
+        <div class="cl hl">
+          <span class="ln">20</span
+          ><span class="lc">
+            <span class="kw">const</span> <span class="vn">ground</span> =
+            <span class="ty">MeshBuilder</span>.<span class="fn"
+              >CreateGround</span
+            >(<span class="st">"ground"</span>, { width:
+            <span class="nu">40</span>, height: <span class="nu">40</span> },
+            scene);<span class="tag">flat 40×40 plane at Y=0</span></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">21</span
+          ><span class="lc">
+            <span class="kw">const</span> <span class="vn">groundMat</span> =
+            <span class="kw">new</span>
+            <span class="ty">StandardMaterial</span>(<span class="st"
+              >"groundMat"</span
+            >, scene);<span class="tag"
+              >create a material (like paint for the mesh)</span
+            ></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">22</span
+          ><span class="lc">
+            <span class="vn">groundMat</span>.diffuseColor =
+            <span class="kw">new</span> <span class="ty">Color3</span>(<span
+              class="nu"
+              >0.3</span
+            >, <span class="nu">0.6</span>, <span class="nu">0.2</span>);<span
+              class="tag"
+              >green: R=0.3, G=0.6, B=0.2</span
+            ></span
+          >
+        </div>
+        <div class="cl">
+          <span class="ln">23</span
+          ><span class="lc">
+            <span class="vn">ground</span>.material =
+            <span class="vn">groundMat</span>;</span
+          >
+        </div>
+        <div class="cl"><span class="ln">24</span><span class="lc"></span></div>
+        <div class="cl hl">
+          <span class="ln">25</span
+          ><span class="lc">
+            <span class="kw">return</span> <span class="vn">scene</span>;<span
+              class="tag"
+              >hand the built scene back to Game.ts</span
+            ></span
+          >
+        </div>
+        <div class="cl">
+          <span class="ln">26</span><span class="lc">}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav">
+      <a href="02-game.html">← Game.ts</a>
+      <a href="04-camera.html">Next: GameCamera.ts →</a>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("scene-viz");
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width,
+        H = canvas.height;
+
+      function draw(t) {
+        ctx.clearRect(0, 0, W, H);
+
+        // Sky gradient
+        const sky = ctx.createLinearGradient(0, 0, 0, H * 0.58);
+        sky.addColorStop(0, "#0a1628");
+        sky.addColorStop(1, "#1a2a3a");
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, W, H * 0.58);
+
+        // Ground
+        const gnd = ctx.createLinearGradient(0, H * 0.55, 0, H);
+        gnd.addColorStop(0, "#3a6a28");
+        gnd.addColorStop(1, "#2a4a1a");
+        ctx.fillStyle = gnd;
+        ctx.fillRect(0, H * 0.55, W, H * 0.45);
+
+        // Perspective grid on ground
+        ctx.strokeStyle = "#4a7a32";
+        ctx.lineWidth = 0.5;
+        const mx = W / 2;
+        for (let i = 1; i < 8; i++) {
+          const y = H * 0.55 + H * 0.45 * (i / 8);
+          const s = 1 - (i / 8) * 0.7;
+          ctx.beginPath();
+          ctx.moveTo(mx - (W / 2) * s, y);
+          ctx.lineTo(mx + (W / 2) * s, y);
+          ctx.stroke();
+        }
+        for (let i = -3; i <= 3; i++) {
+          ctx.beginPath();
+          ctx.moveTo(mx + i * 60, H * 0.55);
+          ctx.lineTo(mx + i * 20, H);
+          ctx.stroke();
+        }
+        ctx.fillStyle = "#3d5a3a";
+        ctx.font = "11px monospace";
+        ctx.fillText("ground · 40×40 units · Y=0", 10, H - 10);
+
+        const cy = H * 0.55;
+
+        // Hemispheric light dome
+        const pulse = 0.85 + 0.15 * Math.sin(t * 0.002);
+        ctx.strokeStyle = `rgba(136,204,255,${0.35 * pulse})`;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.arc(mx, cy, 120, Math.PI, 0);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        for (let a = 0; a <= Math.PI; a += Math.PI / 6) {
+          ctx.strokeStyle = `rgba(136,204,255,${0.12 * pulse})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(
+            mx + 120 * Math.cos(a + Math.PI),
+            cy + 120 * Math.sin(a + Math.PI),
+          );
+          ctx.lineTo(mx, cy);
+          ctx.stroke();
+        }
+        ctx.fillStyle = `rgba(136,204,255,${0.6 * pulse})`;
+        ctx.font = "11px sans-serif";
+        ctx.fillText("HemisphericLight (sky)", mx - 75, cy - 132);
+
+        // Directional sun light
+        const sp = 0.8 + 0.2 * Math.sin(t * 0.0015 + 1);
+        const sx = 75,
+          sy = 75,
+          dx = 120,
+          dy = 100;
+        ctx.strokeStyle = `rgba(255,220,80,${0.7 * sp})`;
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([8, 4]);
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(sx + dx, sy + dy);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        const ang = Math.atan2(dy, dx);
+        ctx.fillStyle = `rgba(255,220,80,${0.8 * sp})`;
+        ctx.beginPath();
+        ctx.moveTo(sx + dx, sy + dy);
+        ctx.lineTo(
+          sx + dx - 12 * Math.cos(ang - 0.4),
+          sy + dy - 12 * Math.sin(ang - 0.4),
+        );
+        ctx.lineTo(
+          sx + dx - 12 * Math.cos(ang + 0.4),
+          sy + dy - 12 * Math.sin(ang + 0.4),
+        );
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = `rgba(255,230,100,${0.9 * sp})`;
+        ctx.beginPath();
+        ctx.arc(sx - 5, sy - 5, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = `rgba(255,220,80,${0.8 * sp})`;
+        ctx.font = "11px sans-serif";
+        ctx.fillText("DirectionalLight (sun)", sx - 5, sy - 18);
+
+        requestAnimationFrame(draw);
+      }
+      requestAnimationFrame(draw);
+    </script>
+  </body>
+</html>
