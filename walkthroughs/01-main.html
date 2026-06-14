@@ -246,6 +246,20 @@
       .nav a:hover {
         border-color: #7c5cbf;
       }
+      .anim-btn {
+        background: #2d2d4a;
+        border: 1px solid #3d3d5a;
+        color: #a78bfa;
+        font-size: 0.78rem;
+        padding: 0.3rem 0.75rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-family: "Segoe UI", sans-serif;
+        transition: border-color 0.2s;
+      }
+      .anim-btn:hover {
+        border-color: #7c5cbf;
+      }
     </style>
   </head>
   <body>
@@ -365,7 +379,7 @@
               class="vn"
               >canvas</span
             >, <span class="kw">true</span>);<span class="tag"
-              >start WebGL — true = antialiasing on</span
+              >connect WebGL to the canvas — true enables anti-aliasing (smoother polygon edges)</span
             ></span
           >
         </div>
@@ -387,7 +401,7 @@
           ><span class="lc"
             ><span class="vn">engine</span>.<span class="fn">runRenderLoop</span
             >(() => <span class="vn">game</span>.<span class="fn">render</span
-            >());<span class="tag">draw a new frame ~60× per second</span></span
+            >());<span class="tag">call game.render() every display refresh — Babylon uses requestAnimationFrame internally</span></span
           >
         </div>
         <div class="cl hl">
@@ -398,7 +412,7 @@
             >, () => <span class="vn">engine</span>.<span class="fn"
               >resize</span
             >());<span class="tag"
-              >stay sharp when the window resizes</span
+              >tell the Engine to recalculate canvas size so it stays sharp after a browser resize</span
             ></span
           >
         </div>
@@ -411,6 +425,9 @@
         <code>runRenderLoop()</code> calls your function on every animation
         frame. Here it is, happening right now in this tab:
       </p>
+      <div style="display:flex; justify-content:flex-end; margin-bottom:0.75rem">
+        <button class="anim-btn" id="pauseBtn" onclick="toggleAnimation()">⏸ Pause</button>
+      </div>
       <div class="loop-viz">
         <div class="counter-block">
           <div class="big-num" id="frameCount">0</div>
@@ -421,7 +438,7 @@
           <div class="num-label">frames per second</div>
         </div>
         <div style="flex: 1; min-width: 180px">
-          <div class="sweep-track"><div class="sweep-bar"></div></div>
+          <div class="sweep-track"><div class="sweep-bar" id="sweepBar"></div></div>
           <div class="sweep-label">game.render() ← called each frame</div>
         </div>
       </div>
@@ -433,22 +450,39 @@
     </div>
 
     <script>
-      let frame = 0,
-        fpsFrames = 0;
+      let frame = 0, fpsFrames = 0;
       let lastSec = performance.now();
+      let rafId = null;
+      let running = true;
+
       function loop(now) {
         frame++;
         fpsFrames++;
-        document.getElementById("frameCount").textContent =
-          frame.toLocaleString();
+        document.getElementById("frameCount").textContent = frame.toLocaleString();
         if (now - lastSec >= 1000) {
           document.getElementById("fpsDisplay").textContent = fpsFrames;
           fpsFrames = 0;
           lastSec = now;
         }
-        requestAnimationFrame(loop);
+        if (running) rafId = requestAnimationFrame(loop);
       }
-      requestAnimationFrame(loop);
+
+      function toggleAnimation() {
+        running = !running;
+        const btn = document.getElementById("pauseBtn");
+        const bar = document.getElementById("sweepBar");
+        if (running) {
+          btn.textContent = "⏸ Pause";
+          bar.style.animationPlayState = "running";
+          lastSec = performance.now();
+          rafId = requestAnimationFrame(loop);
+        } else {
+          btn.textContent = "▶ Resume";
+          bar.style.animationPlayState = "paused";
+        }
+      }
+
+      rafId = requestAnimationFrame(loop);
     </script>
   </body>
 </html>

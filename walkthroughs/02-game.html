@@ -318,6 +318,20 @@
       .nav a:hover {
         border-color: #7c5cbf;
       }
+      .anim-btn {
+        background: #2d2d4a;
+        border: 1px solid #3d3d5a;
+        color: #a78bfa;
+        font-size: 0.78rem;
+        padding: 0.3rem 0.75rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-family: "Segoe UI", sans-serif;
+        transition: border-color 0.2s;
+      }
+      .anim-btn:hover {
+        border-color: #7c5cbf;
+      }
     </style>
   </head>
   <body>
@@ -438,6 +452,9 @@
 
     <div class="card">
       <h2>The Frame Cycle — Every ~16ms</h2>
+      <div style="display:flex; justify-content:flex-end; margin-bottom:0.75rem">
+        <button class="anim-btn" id="pauseBtn" onclick="toggleCycle()">⏸ Pause</button>
+      </div>
       <div class="live-cycle">
         <div class="phase" id="p1">onBeforeRender fires</div>
         <div style="color: #3d3d5a">→</div>
@@ -466,7 +483,7 @@
           ><span class="lc">
             <span class="kw">readonly</span> scene:
             <span class="ty">Scene</span>;<span class="tag"
-              >public — other code can read the scene</span
+              >readonly without private = accessible by other classes; without it, game.scene would be unusable outside Game</span
             ></span
           >
         </div>
@@ -549,7 +566,7 @@
               class="fn"
               >add</span
             >(() => <span class="kw">this</span>.<span class="fn">update</span
-            >());<span class="tag">hook into Babylon's frame loop</span></span
+            >());<span class="tag">register a callback that fires just before each frame renders — this is how update() runs automatically 60×/s</span></span
           >
         </div>
         <div class="cl">
@@ -610,15 +627,29 @@
     <script>
       const phases = ["p1", "p2", "p3"];
       let i = 0;
+      let intervalId = null;
+      let cycleRunning = true;
+
       function tick() {
-        phases.forEach((id) =>
-          document.getElementById(id).classList.remove("lit"),
-        );
+        phases.forEach((id) => document.getElementById(id).classList.remove("lit"));
         document.getElementById(phases[i]).classList.add("lit");
         i = (i + 1) % phases.length;
       }
+
+      function toggleCycle() {
+        cycleRunning = !cycleRunning;
+        const btn = document.getElementById("pauseBtn");
+        if (cycleRunning) {
+          btn.textContent = "⏸ Pause";
+          intervalId = setInterval(tick, 500);
+        } else {
+          btn.textContent = "▶ Resume";
+          clearInterval(intervalId);
+        }
+      }
+
       tick();
-      setInterval(tick, 500);
+      intervalId = setInterval(tick, 500);
     </script>
   </body>
 </html>

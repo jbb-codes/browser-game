@@ -293,9 +293,10 @@
       <div class="bullet">
         <div class="dot"></div>
         <p>
-          WASD / arrow keys add or subtract those direction vectors. The result
-          is normalized (equal speed in all directions) then scaled by
-          <code>SPEED = 0.1</code> units per frame.
+          WASD and arrow keys both work — each pair maps to the same direction.
+          The result is guarded with <code>if (move.length() > 0)</code> to avoid
+          normalizing a zero vector (which would produce NaN), then normalized
+          for equal speed in all directions and scaled by <code>SPEED = 0.1</code> units per frame.
         </p>
       </div>
     </div>
@@ -416,7 +417,7 @@
             >(<span class="st">"player"</span>, { width:
             <span class="nu">1</span>, height: <span class="nu">2</span>, depth:
             <span class="nu">1</span> }, scene);<span class="tag"
-              >1 wide, 2 tall, 1 deep box inside the scene</span
+              >1 unit wide, 2 units tall, 1 unit deep — approximate human proportions at game scale</span
             ></span
           >
         </div>
@@ -425,7 +426,7 @@
           ><span class="lc">
             <span class="kw">this</span>.mesh.position.y =
             <span class="nu">1</span>;<span class="tag"
-              >Y=1 so the bottom of the 2-tall box sits at Y=0</span
+              >mesh origin is at its center; offsetting Y by 1 (half of 2) puts the bottom edge exactly on the ground at Y=0</span
             ></span
           >
         </div>
@@ -436,7 +437,7 @@
             <span class="ty">Color3</span>(<span class="nu">0.6</span>,
             <span class="nu">0.4</span>, <span class="nu">0.8</span>);<span
               class="tag"
-              >purple material</span
+              >R=0.6 G=0.4 B=0.8 ≈ medium purple — easy to spot against the green ground</span
             ></span
           >
         </div>
@@ -458,7 +459,7 @@
             <span class="kw">const</span> <span class="vn">forward</span> =
             camera.<span class="fn">getForwardRay</span>().direction;<span
               class="tag"
-              >where is the camera looking?</span
+              >get a unit direction vector pointing into the scene from the camera's eye</span
             ></span
           >
         </div>
@@ -470,7 +471,7 @@
             <span class="ty">Vector3</span>(forward.x,
             <span class="nu">0</span>, forward.z).<span class="fn"
               >normalize</span
-            >();<span class="tag">flatten to ground plane (no Y)</span></span
+            >();<span class="tag">zero out Y so the player can only move horizontally — no moving up or down slopes</span></span
           >
         </div>
         <div class="cl hl">
@@ -483,68 +484,80 @@
             >.<span class="fn">Up</span>(),
             <span class="vn">forwardFlat</span>).<span class="fn"
               >normalize</span
-            >();<span class="tag">90° right of forward</span></span
+            >();<span class="tag">Cross(Up, Forward) always produces a vector exactly 90° to the right — this is the strafe axis</span></span
           >
         </div>
         <div class="cl hl">
-          <span class="ln">33</span
+          <span class="ln">37</span
           ><span class="lc">
             <span class="kw">if</span> (input.<span class="fn">isDown</span
-            >(<span class="st">"w"</span>)) move.<span class="fn"
+            >(<span class="st">"w"</span>) || input.<span class="fn">isDown</span>(<span class="st">"arrowup"</span>)) move.<span class="fn"
               >addInPlace</span
             >(forwardFlat);<span class="tag"
-              >W moves toward camera's forward</span
+              >W or ↑ adds the flat forward vector — player walks where the camera is pointing</span
             ></span
-          >
-        </div>
-        <div class="cl hl">
-          <span class="ln">34</span
-          ><span class="lc">
-            <span class="kw">if</span> (input.<span class="fn">isDown</span
-            >(<span class="st">"s"</span>)) move.<span class="fn"
-              >subtractInPlace</span
-            >(forwardFlat);<span class="tag"
-              >S moves away from forward</span
-            ></span
-          >
-        </div>
-        <div class="cl hl">
-          <span class="ln">35</span
-          ><span class="lc">
-            <span class="kw">if</span> (input.<span class="fn">isDown</span
-            >(<span class="st">"a"</span>)) move.<span class="fn"
-              >subtractInPlace</span
-            >(right);<span class="tag">A strafes left</span></span
-          >
-        </div>
-        <div class="cl hl">
-          <span class="ln">36</span
-          ><span class="lc">
-            <span class="kw">if</span> (input.<span class="fn">isDown</span
-            >(<span class="st">"d"</span>)) move.<span class="fn"
-              >addInPlace</span
-            >(right);<span class="tag">D strafes right</span></span
           >
         </div>
         <div class="cl hl">
           <span class="ln">39</span
           ><span class="lc">
-            move.<span class="fn">normalize</span>().<span class="fn"
-              >scaleInPlace</span
-            >(<span class="vn">SPEED</span>);<span class="tag"
-              >equal speed in all directions</span
+            <span class="kw">if</span> (input.<span class="fn">isDown</span
+            >(<span class="st">"s"</span>) || input.<span class="fn">isDown</span>(<span class="st">"arrowdown"</span>)) move.<span class="fn"
+              >subtractInPlace</span
+            >(forwardFlat);<span class="tag"
+              >S or ↓ subtracts forward — player walks opposite of where the camera points (backward)</span
             ></span
           >
         </div>
         <div class="cl hl">
-          <span class="ln">40</span
+          <span class="ln">41</span
           ><span class="lc">
-            <span class="kw">this</span>.mesh.position.<span class="fn"
+            <span class="kw">if</span> (input.<span class="fn">isDown</span
+            >(<span class="st">"a"</span>) || input.<span class="fn">isDown</span>(<span class="st">"arrowleft"</span>)) move.<span class="fn"
+              >subtractInPlace</span
+            >(right);<span class="tag">A or ← subtracts the right vector — player slides left relative to the camera</span></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">43</span
+          ><span class="lc">
+            <span class="kw">if</span> (input.<span class="fn">isDown</span
+            >(<span class="st">"d"</span>) || input.<span class="fn">isDown</span>(<span class="st">"arrowright"</span>)) move.<span class="fn"
               >addInPlace</span
-            >(move);<span class="tag"
-              >apply the movement to the mesh position</span
+            >(right);<span class="tag">D or → adds the right vector — player slides right relative to the camera</span></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">45</span
+          ><span class="lc">
+            <span class="kw">if</span> (move.<span class="fn">length</span>() &gt; <span class="nu">0</span>) {<span class="tag"
+              >only move if a key is held — avoids normalizing a zero vector (which produces NaN)</span
             ></span
           >
+        </div>
+        <div class="cl hl">
+          <span class="ln">46</span
+          ><span class="lc">
+            &nbsp;&nbsp;move.<span class="fn">normalize</span>().<span class="fn"
+              >scaleInPlace</span
+            >(<span class="vn">SPEED</span>);<span class="tag"
+              >normalize() makes length 1 (removes diagonal speed boost); SPEED=0.1 sets final distance per frame</span
+            ></span
+          >
+        </div>
+        <div class="cl hl">
+          <span class="ln">47</span
+          ><span class="lc">
+            &nbsp;&nbsp;<span class="kw">this</span>.mesh.position.<span class="fn"
+              >addInPlace</span
+            >(move);<span class="tag"
+              >shift the mesh's world position by the final move vector — directly moves the player in 3D space</span
+            ></span
+          >
+        </div>
+        <div class="cl">
+          <span class="ln">48</span
+          ><span class="lc"> }</span>
         </div>
       </div>
     </div>
@@ -570,20 +583,24 @@
         .addEventListener("input", function () {
           camDeg = parseFloat(this.value);
           document.getElementById("camAngleLabel").textContent = camDeg + "°";
+          draw();
         });
 
       document.querySelectorAll(".key[data-key]").forEach((btn) => {
         btn.addEventListener("mousedown", () => {
           pressedKeys.add(btn.dataset.key);
           btn.classList.add("active");
+          draw();
         });
         btn.addEventListener("mouseup", () => {
           pressedKeys.delete(btn.dataset.key);
           btn.classList.remove("active");
+          draw();
         });
         btn.addEventListener("mouseleave", () => {
           pressedKeys.delete(btn.dataset.key);
           btn.classList.remove("active");
+          draw();
         });
       });
 
@@ -717,9 +734,8 @@
         ctx.font = "9px sans-serif";
         ctx.fillText("(top-down view)", cx, cy + 38);
 
-        requestAnimationFrame(draw);
       }
-      draw();
+      draw(); // draw once initially; inputs trigger redraws
     </script>
   </body>
 </html>

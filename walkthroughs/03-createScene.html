@@ -224,6 +224,20 @@
       .nav a:hover {
         border-color: #7c5cbf;
       }
+      .anim-btn {
+        background: #2d2d4a;
+        border: 1px solid #3d3d5a;
+        color: #a78bfa;
+        font-size: 0.78rem;
+        padding: 0.3rem 0.75rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-family: "Segoe UI", sans-serif;
+        transition: border-color 0.2s;
+      }
+      .anim-btn:hover {
+        border-color: #7c5cbf;
+      }
     </style>
   </head>
   <body>
@@ -273,6 +287,9 @@
 
     <div class="card">
       <h2>What Gets Built — Animated</h2>
+      <div style="display:flex; justify-content:flex-end; margin-bottom:0.75rem">
+        <button class="anim-btn" id="pauseBtn" onclick="toggleScene()">⏸ Pause</button>
+      </div>
       <div class="scene-canvas-wrap">
         <canvas id="scene-viz" width="500" height="300"></canvas>
       </div>
@@ -381,7 +398,7 @@
               >0</span
             >,<span class="nu">1</span>,<span class="nu">0</span>),
             scene).intensity = <span class="nu">0.6</span>;<span class="tag"
-              >soft sky light from above</span
+              >direction (0,1,0) = coming from above; lights all surfaces evenly with no hard shadows</span
             ></span
           >
         </div>
@@ -398,7 +415,7 @@
               >-1</span
             >,<span class="nu">-2</span>,<span class="nu">-1</span>),
             scene);<span class="tag"
-              >angled sunlight from upper-left</span
+              >direction is where light travels (-1,-2,-1), so it comes FROM upper-left-front — creates directional shading</span
             ></span
           >
         </div>
@@ -584,9 +601,22 @@
         ctx.font = "11px sans-serif";
         ctx.fillText("DirectionalLight (sun)", sx - 5, sy - 18);
 
-        requestAnimationFrame(draw);
+        if (animRunning) requestAnimationFrame(draw);
       }
-      requestAnimationFrame(draw);
+
+      let animRunning = true;
+      let rafId = requestAnimationFrame(draw);
+
+      function toggleScene() {
+        animRunning = !animRunning;
+        const btn = document.getElementById("pauseBtn");
+        if (animRunning) {
+          btn.textContent = "⏸ Pause";
+          rafId = requestAnimationFrame(draw);
+        } else {
+          btn.textContent = "▶ Resume";
+        }
+      }
     </script>
   </body>
 </html>

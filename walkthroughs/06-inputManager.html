@@ -429,7 +429,7 @@
             window.<span class="fn">addEventListener</span>(<span class="st"
               >"keydown"</span
             >, <span class="kw">this</span>.onKeyDown);<span class="tag"
-              >start listening for key presses</span
+              >attach keydown listener to the window so it fires for any key pressed while the game is running</span
             ></span
           >
         </div>
@@ -439,7 +439,7 @@
             window.<span class="fn">addEventListener</span>(<span class="st"
               >"keyup"</span
             >, <span class="kw">this</span>.onKeyUp);<span class="tag"
-              >start listening for key releases</span
+              >attach keyup listener to the window so the game knows exactly when a key is no longer held</span
             ></span
           >
         </div>
@@ -462,7 +462,7 @@
             <span class="kw">this</span>.keys[e.key.<span class="fn"
               >toLowerCase</span
             >()] = <span class="kw">true</span>;<span class="tag"
-              >mark this key as held</span
+              >store true for this key — Player.update() will see it as pressed on the very next frame</span
             ></span
           >
         </div>
@@ -485,7 +485,7 @@
             <span class="kw">this</span>.keys[e.key.<span class="fn"
               >toLowerCase</span
             >()] = <span class="kw">false</span>;<span class="tag"
-              >mark this key as released</span
+              >store false — Player.update() sees the key as released and stops that movement direction next frame</span
             ></span
           >
         </div>
@@ -506,7 +506,7 @@
             <span class="kw">return</span>
             <span class="kw">this</span>.keys[key] ===
             <span class="kw">true</span>;<span class="tag"
-              >called by Player.update() every frame</span
+              >returns true only if the key is currently held; false if never pressed or already released (undefined === true is false)</span
             ></span
           >
         </div>
@@ -527,7 +527,7 @@
             window.<span class="fn">removeEventListener</span>(<span class="st"
               >"keydown"</span
             >, <span class="kw">this</span>.onKeyDown);<span class="tag"
-              >clean up when game shuts down</span
+              >remove both listeners so the browser stops calling these functions after the game is destroyed — prevents memory leaks</span
             ></span
           >
         </div>

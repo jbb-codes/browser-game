@@ -381,7 +381,7 @@
             >, <span class="nu">20</span>, target.position.<span class="fn"
               >clone</span
             >(), scene);<span class="tag"
-              >name, alpha, beta, radius, target, scene</span
+              >alpha=-π/2 starts camera in front of player; beta=π/3 is 60° above; radius=20 is starting distance</span
             ></span
           >
         </div>
@@ -390,7 +390,7 @@
           ><span class="lc">
             <span class="kw">this</span>.camera.lowerRadiusLimit =
             <span class="nu">5</span>;<span class="tag"
-              >can't zoom closer than 5 units</span
+              >prevents the camera from clipping through the player when scrolling in</span
             ></span
           >
         </div>
@@ -399,7 +399,7 @@
           ><span class="lc">
             <span class="kw">this</span>.camera.upperRadiusLimit =
             <span class="nu">40</span>;<span class="tag"
-              >can't zoom farther than 40 units</span
+              >prevents the camera from pulling so far back the player becomes invisible</span
             ></span
           >
         </div>
@@ -408,7 +408,7 @@
           ><span class="lc">
             <span class="kw">this</span>.camera.upperBetaLimit = Math.PI /
             <span class="nu">2.5</span>;<span class="tag"
-              >stops camera going below ground (72°)</span
+              >π/2.5 ≈ 72° — any higher and the camera would clip below the ground plane</span
             ></span
           >
         </div>
@@ -417,7 +417,7 @@
           ><span class="lc">
             <span class="kw">this</span>.camera.panningSensibility =
             <span class="nu">0</span>;<span class="tag"
-              >disable panning — camera only orbits</span
+              >disables right-click-drag panning; the player moves the world, not the camera offset</span
             ></span
           >
         </div>
@@ -428,7 +428,7 @@
             <span class="kw">this</span>.camera.<span class="fn"
               >attachControl</span
             >(canvas, <span class="kw">true</span>);<span class="tag"
-              >mouse drag = rotate, scroll = zoom</span
+              >wires mouse and touch input to the camera — left-drag orbits, scroll wheel zooms</span
             ></span
           >
         </div>
@@ -438,7 +438,7 @@
           ><span class="lc">
             scene.onBeforeRenderObservable.<span class="fn">add</span>(() =>
             {<span class="tag"
-              >every frame — keep locked onto moving player</span
+              >this fires before each frame draw; copying the player position each frame makes the camera follow them as they move</span
             ></span
           >
         </div>
@@ -482,18 +482,21 @@
         .addEventListener("input", function () {
           alpha = (parseFloat(this.value) * Math.PI) / 180;
           document.getElementById("alphaVal").textContent = this.value + "°";
+          draw();
         });
       document
         .getElementById("betaSlider")
         .addEventListener("input", function () {
           beta = (parseFloat(this.value) * Math.PI) / 180;
           document.getElementById("betaVal").textContent = this.value + "°";
+          draw();
         });
       document
         .getElementById("radiusSlider")
         .addEventListener("input", function () {
           radius = parseFloat(this.value);
           document.getElementById("radiusVal").textContent = this.value;
+          draw();
         });
 
       function draw() {
@@ -565,9 +568,8 @@
         ctx.fillText("camera", camX2, camY2 - 11);
         ctx.textBaseline = "alphabetic";
 
-        requestAnimationFrame(draw);
       }
-      draw();
+      draw(); // draw once initially; sliders trigger redraws
     </script>
   </body>
 </html>
