@@ -17,6 +17,7 @@ const GRAVITY = new Vector3(0, -18, 0);
 const DOWN = new Vector3(0, -1, 0);
 const CAPSULE_HEIGHT = 2;
 const CAPSULE_RADIUS = 0.5;
+const FOOT_OFFSET = 0.4;
 const ROTATION_SPEED = 10;
 const CHARACTER_URL = "https://assets.babylonjs.com/meshes/HVGirl.glb";
 const CHARACTER_SCALE = 0.2;
@@ -122,6 +123,10 @@ export class Player {
     this.characterController.integrate(delta, support, GRAVITY);
 
     const pos = this.characterController.getPosition();
-    this.root.position.set(pos.x, pos.y - CAPSULE_HEIGHT / 2, pos.z);
+    this.root.position.set(
+      pos.x,
+      pos.y - CAPSULE_HEIGHT / 2 - CAPSULE_RADIUS + FOOT_OFFSET,
+      pos.z,
+    );
   }
 }
