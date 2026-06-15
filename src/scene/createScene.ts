@@ -19,6 +19,10 @@ export function createScene(
   const scene = new Scene(engine);
   scene.enablePhysics(new Vector3(0, -9.81, 0), havokPlugin);
 
+  scene.fogMode = Scene.FOGMODE_EXP2;
+  scene.fogColor = new Color3(0.74, 0.84, 0.95);
+  scene.fogDensity = 0.02;
+
   const { shadowGenerator } = createLighting(scene);
 
   const ground = MeshBuilder.CreateGround(
