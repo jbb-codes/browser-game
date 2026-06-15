@@ -12,7 +12,6 @@ import { SkyMaterial } from "@babylonjs/materials";
 const SUN_DIRECTION = new Vector3(-1, -2, -1);
 
 export function createLighting(scene: Scene): {
-  sun: DirectionalLight;
   shadowGenerator: ShadowGenerator;
 } {
   const sun = new DirectionalLight("sun", SUN_DIRECTION, scene);
@@ -43,5 +42,5 @@ export function createLighting(scene: Scene): {
   shadowGenerator.bias = 0;
   shadowGenerator.normalBias = 0;
 
-  return { sun, shadowGenerator };
+  return { shadowGenerator };
 }

@@ -48,9 +48,4 @@ export class Game {
   render(): void {
     this.scene.render();
   }
-
-  dispose(): void {
-    this.input.dispose();
-    this.scene.dispose();
-  }
 }
