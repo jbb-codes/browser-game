@@ -1,6 +1,7 @@
 import HavokPhysics from "@babylonjs/havok";
 import { Engine, HavokPlugin, Scene } from "@babylonjs/core";
 import { createScene } from "../scene/createScene";
+import { createPostProcessing } from "../scene/createPostProcessing";
 import { Player } from "../entities/Player";
 import { GameCamera } from "../camera/GameCamera";
 import { InputManager } from "../input/InputManager";
@@ -31,6 +32,7 @@ export class Game {
     this.player = new Player(this.scene);
     shadowGenerator.addShadowCaster(this.player.mesh);
     this.gameCamera = new GameCamera(this.scene, canvas, this.player.mesh);
+    createPostProcessing(this.scene, this.gameCamera.camera);
 
     this.scene.onBeforeRenderObservable.add(() => this.update());
   }
