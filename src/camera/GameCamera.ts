@@ -1,4 +1,4 @@
-import { Scene, ArcRotateCamera, Mesh } from "@babylonjs/core";
+import { ArcRotateCamera, Mesh, Scene } from "@babylonjs/core";
 
 export class GameCamera {
   readonly camera: ArcRotateCamera;
@@ -16,11 +16,8 @@ export class GameCamera {
     this.camera.upperRadiusLimit = 40;
     this.camera.upperBetaLimit = Math.PI / 2.5;
     this.camera.panningSensibility = 0;
+    this.camera.lockedTarget = target;
 
     this.camera.attachControl(canvas, true);
-
-    scene.onBeforeRenderObservable.add(() => {
-      this.camera.target = target.position.clone();
-    });
   }
 }
