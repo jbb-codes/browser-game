@@ -25,9 +25,11 @@ export class Game {
     canvas: HTMLCanvasElement,
     havokPlugin: HavokPlugin,
   ) {
-    this.scene = createScene(engine, havokPlugin);
+    const { scene, shadowGenerator } = createScene(engine, havokPlugin);
+    this.scene = scene;
     this.input = new InputManager();
     this.player = new Player(this.scene);
+    shadowGenerator.addShadowCaster(this.player.mesh);
     this.gameCamera = new GameCamera(this.scene, canvas, this.player.mesh);
 
     this.scene.onBeforeRenderObservable.add(() => this.update());

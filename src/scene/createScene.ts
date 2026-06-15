@@ -8,14 +8,18 @@ import {
   HavokPlugin,
   PhysicsAggregate,
   PhysicsShapeType,
+  ShadowGenerator,
 } from "@babylonjs/core";
 import { createLighting } from "./createLighting";
 
-export function createScene(engine: Engine, havokPlugin: HavokPlugin): Scene {
+export function createScene(
+  engine: Engine,
+  havokPlugin: HavokPlugin,
+): { scene: Scene; shadowGenerator: ShadowGenerator } {
   const scene = new Scene(engine);
   scene.enablePhysics(new Vector3(0, -9.81, 0), havokPlugin);
 
-  createLighting(scene);
+  const { shadowGenerator } = createLighting(scene);
 
   const ground = MeshBuilder.CreateGround(
     "ground",
@@ -26,6 +30,7 @@ export function createScene(engine: Engine, havokPlugin: HavokPlugin): Scene {
   groundMat.diffuseColor = new Color3(0.3, 0.6, 0.2);
   ground.material = groundMat;
   new PhysicsAggregate(ground, PhysicsShapeType.MESH, { mass: 0 }, scene);
+  ground.receiveShadows = true;
 
-  return scene;
+  return { scene, shadowGenerator };
 }
