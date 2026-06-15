@@ -18,7 +18,7 @@ export class Game {
   ): Promise<Game> {
     const havok = await HavokPhysics();
     const havokPlugin = new HavokPlugin(true, havok);
-    const { scene, shadowGenerator } = createScene(engine, havokPlugin);
+    const { scene, shadowGenerator } = await createScene(engine, havokPlugin);
     const player = await Player.create(scene);
     return new Game(canvas, scene, shadowGenerator, player);
   }

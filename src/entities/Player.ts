@@ -52,7 +52,7 @@ export class Player {
     this.idleAnim?.start(true);
 
     this.characterController = new PhysicsCharacterController(
-      new Vector3(0, 1, 0),
+      new Vector3(0, 7.3, 0),
       { capsuleHeight: CAPSULE_HEIGHT, capsuleRadius: CAPSULE_RADIUS },
       scene,
     );
