@@ -1,5 +1,5 @@
 import HavokPhysics from "@babylonjs/havok";
-import { Engine, HavokPlugin, Scene } from "@babylonjs/core";
+import { Engine, HavokPlugin, Scene, ShadowGenerator } from "@babylonjs/core";
 import { createScene } from "../scene/createScene";
 import { createPostProcessing } from "../scene/createPostProcessing";
 import { Player } from "../entities/Player";
@@ -18,20 +18,22 @@ export class Game {
   ): Promise<Game> {
     const havok = await HavokPhysics();
     const havokPlugin = new HavokPlugin(true, havok);
-    return new Game(engine, canvas, havokPlugin);
+    const { scene, shadowGenerator } = createScene(engine, havokPlugin);
+    const player = await Player.create(scene);
+    return new Game(canvas, scene, shadowGenerator, player);
   }
 
   private constructor(
-    engine: Engine,
     canvas: HTMLCanvasElement,
-    havokPlugin: HavokPlugin,
+    scene: Scene,
+    shadowGenerator: ShadowGenerator,
+    player: Player,
   ) {
-    const { scene, shadowGenerator } = createScene(engine, havokPlugin);
     this.scene = scene;
     this.input = new InputManager();
-    this.player = new Player(this.scene);
-    shadowGenerator.addShadowCaster(this.player.mesh);
-    this.gameCamera = new GameCamera(this.scene, canvas, this.player.mesh);
+    this.player = player;
+    shadowGenerator.addShadowCaster(this.player.root, true);
+    this.gameCamera = new GameCamera(this.scene, canvas, this.player.root);
     createPostProcessing(this.scene, this.gameCamera.camera);
 
     this.scene.onBeforeRenderObservable.add(() => this.update());
@@ -40,6 +42,7 @@ export class Game {
   private update(): void {
     const delta = this.scene.getEngine().getDeltaTime() / 1000;
     this.player.update(this.input, this.gameCamera.camera, delta);
+    this.gameCamera.follow(this.player.cameraTarget);
   }
 
   render(): void {
