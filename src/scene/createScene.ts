@@ -1,8 +1,6 @@
 import {
   Engine,
   Scene,
-  HemisphericLight,
-  DirectionalLight,
   Vector3,
   MeshBuilder,
   StandardMaterial,
@@ -11,16 +9,13 @@ import {
   PhysicsAggregate,
   PhysicsShapeType,
 } from "@babylonjs/core";
+import { createLighting } from "./createLighting";
 
 export function createScene(engine: Engine, havokPlugin: HavokPlugin): Scene {
   const scene = new Scene(engine);
   scene.enablePhysics(new Vector3(0, -9.81, 0), havokPlugin);
 
-  new HemisphericLight("ambientLight", new Vector3(0, 1, 0), scene).intensity =
-    0.6;
-
-  const sun = new DirectionalLight("sun", new Vector3(-1, -2, -1), scene);
-  sun.intensity = 0.8;
+  createLighting(scene);
 
   const ground = MeshBuilder.CreateGround(
     "ground",
