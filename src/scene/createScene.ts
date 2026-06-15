@@ -7,10 +7,14 @@ import {
   MeshBuilder,
   StandardMaterial,
   Color3,
+  HavokPlugin,
+  PhysicsAggregate,
+  PhysicsShapeType,
 } from "@babylonjs/core";
 
-export function createScene(engine: Engine): Scene {
+export function createScene(engine: Engine, havokPlugin: HavokPlugin): Scene {
   const scene = new Scene(engine);
+  scene.enablePhysics(new Vector3(0, -9.81, 0), havokPlugin);
 
   new HemisphericLight("ambientLight", new Vector3(0, 1, 0), scene).intensity =
     0.6;
@@ -26,6 +30,7 @@ export function createScene(engine: Engine): Scene {
   const groundMat = new StandardMaterial("groundMat", scene);
   groundMat.diffuseColor = new Color3(0.3, 0.6, 0.2);
   ground.material = groundMat;
+  new PhysicsAggregate(ground, PhysicsShapeType.MESH, { mass: 0 }, scene);
 
   return scene;
 }
